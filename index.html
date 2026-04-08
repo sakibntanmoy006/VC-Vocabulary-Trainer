@@ -336,8 +336,8 @@
       /* ── Cloud tooltip ── */
       .cloud-tip {
         position: absolute;
-        bottom: calc(100% + 12px);
-        right: 0;
+        top: 50%;
+        left: calc(100% + 14px);
         background: var(--surface);
         border: 0.5px solid var(--gold-dim);
         border-radius: 12px;
@@ -351,21 +351,21 @@
         pointer-events: auto;
         cursor: pointer;
         opacity: 0;
-        transform: translateY(6px);
+        transform: translate(-6px, -50%);
         animation: cloudIn 0.4s 0.8s ease forwards;
       }
 
       .cloud-tip::after {
         content: '';
         position: absolute;
-        bottom: -6px;
-        right: 24px;
+        top: 50%;
+        left: -6px;
         width: 12px;
         height: 12px;
         background: var(--surface);
-        border-right: 0.5px solid var(--gold-dim);
+        border-left: 0.5px solid var(--gold-dim);
         border-bottom: 0.5px solid var(--gold-dim);
-        transform: rotate(45deg);
+        transform: translateY(-50%) rotate(45deg);
       }
 
       .cloud-tip .tip-icon {
@@ -382,7 +382,7 @@
       }
 
       @keyframes cloudIn {
-        to { opacity: 1; transform: translateY(0); }
+        to { opacity: 1; transform: translate(0, -50%); }
       }
 
       .cloud-tip.hiding {
@@ -390,7 +390,7 @@
       }
 
       @keyframes cloudOut {
-        to { opacity: 0; transform: translateY(-6px); }
+        to { opacity: 0; transform: translate(-6px, -50%); }
       }
 
       /* ── Main stage ── */

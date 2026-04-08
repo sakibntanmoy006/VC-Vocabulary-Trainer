@@ -35,7 +35,6 @@ Since VEMC relies entirely on frontend web technologies and LocalStorage, there 
 * **Front-end:** Vanilla HTML5, CSS3, JavaScript (ES6+).
 * **Storage:** Native Browser `localStorage`.
 * **Libraries:** None. 100% dependency-free processing and charting algorithms.
-* **Icons:** Custom SVG iconography and layout geometry.
 
 ---
 Created by **Sakib Nawar Tanmoy** •  [GitHub](https://github.com/sakibntanmoy006) | [LinkedIn](https://www.linkedin.com/in/snt006/)

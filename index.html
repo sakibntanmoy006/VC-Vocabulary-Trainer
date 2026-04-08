@@ -1,0 +1,2968 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VEMC Vocabulary Trainer</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      :root {
+        --gold: #c9a84c;
+        --gold-light: #e8d5a3;
+        --gold-dim: #8a6f2e;
+        --bg: #0e0f11;
+        --surface: #16181c;
+        --surface2: #1f2228;
+        --surface3: #282c35;
+        --border: rgba(201, 168, 76, 0.15);
+        --border2: rgba(201, 168, 76, 0.3);
+        --text: #f0ede4;
+        --text-muted: #8a8780;
+        --text-dim: #5a5855;
+        --green: #4a9e6a;
+        --green-bg: rgba(74, 158, 106, 0.12);
+        --red: #c05050;
+        --red-bg: rgba(192, 80, 80, 0.12);
+        --blue: #5b8fcc;
+        --blue-bg: rgba(91, 143, 204, 0.1);
+        --radius: 16px;
+        --card-w: 680px;
+        --card-h: 420px;
+      }
+
+      body {
+        font-family: "DM Sans", sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        overflow-x: hidden;
+      }
+
+      /* Background grain texture */
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+        pointer-events: none;
+        z-index: 0;
+        opacity: 0.4;
+      }
+
+      /* ── Header ── */
+      header {
+        position: relative;
+        z-index: 10;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 20px 32px;
+        border-bottom: 0.5px solid var(--border);
+        backdrop-filter: blur(8px);
+      }
+
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        text-decoration: none;
+      }
+
+      .logo-mark {
+        flex-shrink: 0;
+        filter: drop-shadow(0 0 6px rgba(201, 168, 76, 0.25));
+        transition: filter 0.3s ease;
+      }
+
+      .logo:hover .logo-mark {
+        filter: drop-shadow(0 0 12px rgba(201, 168, 76, 0.45));
+      }
+
+      .logo-text {
+        font-family: "Playfair Display", serif;
+        font-size: 22px;
+        letter-spacing: 0.08em;
+        color: var(--gold);
+        line-height: 1;
+      }
+
+      .logo-text span {
+        display: block;
+        color: var(--text-muted);
+        font-style: italic;
+        font-size: 11px;
+        letter-spacing: 0.12em;
+        margin-top: 3px;
+      }
+
+      .header-stats {
+        display: flex;
+        gap: 20px;
+        align-items: center;
+      }
+
+      .stat-pill {
+        font-size: 12px;
+        color: var(--text-muted);
+        background: var(--surface2);
+        border: 0.5px solid var(--border);
+        border-radius: 20px;
+        padding: 5px 14px;
+      }
+
+      .stat-pill b {
+        color: var(--text);
+        font-weight: 500;
+      }
+      .stat-pill.green b {
+        color: var(--green);
+      }
+      .stat-pill.red b {
+        color: var(--red);
+      }
+
+      /* ── Progress bar ── */
+      .progress-track {
+        height: 2px;
+        background: var(--surface2);
+        position: relative;
+        z-index: 5;
+      }
+
+      .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, var(--gold-dim), var(--gold));
+        transition: width 0.4s ease;
+      }
+
+      /* ── Controls bar ── */
+      .controls {
+        position: relative;
+        z-index: 10;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 14px 32px;
+        border-bottom: 0.5px solid var(--border);
+        flex-wrap: wrap;
+      }
+
+      .search-wrap {
+        position: relative;
+        flex: 1;
+        min-width: 180px;
+        max-width: 280px;
+      }
+
+      .search-icon {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-dim);
+        font-size: 14px;
+      }
+
+      input[type="text"] {
+        width: 100%;
+        background: var(--surface2);
+        border: 0.5px solid var(--border);
+        border-radius: 8px;
+        color: var(--text);
+        font-family: "DM Sans", sans-serif;
+        font-size: 13px;
+        padding: 8px 12px 8px 32px;
+        outline: none;
+        transition: border-color 0.2s;
+      }
+
+      input[type="text"]:focus {
+        border-color: var(--gold-dim);
+      }
+      input[type="text"]::placeholder {
+        color: var(--text-dim);
+      }
+
+      .btn {
+        font-family: "DM Sans", sans-serif;
+        font-size: 12px;
+        font-weight: 500;
+        letter-spacing: 0.04em;
+        padding: 8px 16px;
+        border-radius: 8px;
+        border: 0.5px solid var(--border);
+        background: var(--surface2);
+        color: var(--text-muted);
+        cursor: pointer;
+        transition: all 0.18s;
+        white-space: nowrap;
+      }
+
+      .btn:hover {
+        background: var(--surface3);
+        color: var(--text);
+        border-color: var(--border2);
+      }
+      .btn.active {
+        background: var(--gold-dim);
+        color: var(--gold-light);
+        border-color: var(--gold-dim);
+      }
+      .btn.danger {
+        color: var(--red);
+      }
+      .btn.danger:hover {
+        background: var(--red-bg);
+        border-color: rgba(192, 80, 80, 0.3);
+      }
+
+      .divider {
+        width: 1px;
+        height: 20px;
+        background: var(--border);
+      }
+
+      /* ── Main stage ── */
+      main {
+        flex: 1;
+        position: relative;
+        z-index: 5;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 32px 20px;
+        gap: 28px;
+      }
+
+      /* ── Counter ── */
+      .counter {
+        font-size: 12px;
+        color: var(--text-dim);
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+
+      /* ── Flashcard ── */
+      .card-scene {
+        width: 100%;
+        max-width: var(--card-w);
+        height: var(--card-h);
+        perspective: 1200px;
+        cursor: pointer;
+      }
+
+      .card-inner {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        transform-style: preserve-3d;
+        transition: transform 0.55s cubic-bezier(0.4, 0.2, 0.2, 1);
+      }
+
+      .card-scene.flipped .card-inner {
+        transform: rotateY(180deg);
+      }
+
+      .card-face {
+        position: absolute;
+        inset: 0;
+        backface-visibility: hidden;
+        border-radius: var(--radius);
+        border: 0.5px solid var(--border);
+        background: var(--surface);
+        overflow: hidden;
+      }
+
+      /* Gold top stripe */
+      .card-face::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          var(--gold-dim),
+          var(--gold),
+          var(--gold-dim),
+          transparent
+        );
+      }
+
+      .card-back {
+        transform: rotateY(180deg);
+      }
+
+      /* Front face */
+      .front-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        gap: 16px;
+        padding: 40px;
+        text-align: center;
+        position: relative;
+      }
+
+      .word-index {
+        position: absolute;
+        top: 24px;
+        left: 28px;
+        font-size: 11px;
+        color: var(--text-dim);
+        letter-spacing: 0.1em;
+      }
+
+      .word-status {
+        position: absolute;
+        top: 20px;
+        right: 24px;
+        font-size: 11px;
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-weight: 500;
+        letter-spacing: 0.04em;
+      }
+
+      .word-status.known {
+        background: var(--green-bg);
+        color: var(--green);
+      }
+      .word-status.learning {
+        background: var(--red-bg);
+        color: var(--red);
+      }
+
+      .word-text {
+        font-family: "Playfair Display", serif;
+        font-size: 58px;
+        font-weight: 400;
+        color: var(--text);
+        letter-spacing: -0.01em;
+        line-height: 1;
+      }
+
+      .flip-hint {
+        font-size: 11px;
+        color: var(--text-dim);
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        position: absolute;
+        bottom: 24px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .flip-hint::before,
+      .flip-hint::after {
+        content: "—";
+        color: var(--text-dim);
+        opacity: 0.5;
+      }
+
+      /* Back face */
+      .back-content {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        padding: 28px 36px;
+        gap: 14px;
+        overflow-y: auto;
+      }
+
+      .back-content::-webkit-scrollbar {
+        width: 4px;
+      }
+      .back-content::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      .back-content::-webkit-scrollbar-thumb {
+        background: var(--border);
+        border-radius: 4px;
+      }
+
+      .back-word {
+        font-family: "Playfair Display", serif;
+        font-size: 26px;
+        color: var(--gold);
+        font-style: italic;
+      }
+
+      .info-row {
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+      }
+
+      .info-label {
+        font-size: 10px;
+        font-weight: 500;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--text-dim);
+        min-width: 72px;
+        padding-top: 2px;
+      }
+
+      .info-val {
+        font-size: 14px;
+        color: var(--text);
+        line-height: 1.6;
+        flex: 1;
+      }
+
+      .info-val.bengali {
+        font-size: 14px;
+        color: var(--gold-light);
+      }
+
+      .pos-badge {
+        display: inline-block;
+        font-size: 11px;
+        padding: 3px 10px;
+        border-radius: 12px;
+        background: var(--blue-bg);
+        color: var(--blue);
+        font-weight: 500;
+        border: 0.5px solid rgba(91, 143, 204, 0.2);
+      }
+
+      .synm-wrap {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+
+      .syn-chip {
+        font-size: 12px;
+        padding: 3px 10px;
+        border-radius: 10px;
+        background: var(--surface3);
+        color: var(--text-muted);
+        border: 0.5px solid var(--border);
+      }
+
+      .example-text {
+        font-size: 13px;
+        font-style: italic;
+        color: var(--text-muted);
+        line-height: 1.6;
+      }
+
+      .separator {
+        height: 0.5px;
+        background: var(--border);
+        flex-shrink: 0;
+      }
+
+      /* Loading state */
+      .loading-shimmer {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        animation: pulse 1.4s ease-in-out infinite;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 0.4;
+        }
+        50% {
+          opacity: 1;
+        }
+      }
+
+      .shimmer-line {
+        height: 14px;
+        background: var(--surface3);
+        border-radius: 6px;
+      }
+
+      /* ── Action buttons ── */
+      .card-actions {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+      }
+
+      .action-btn {
+        font-family: "DM Sans", sans-serif;
+        font-size: 13px;
+        font-weight: 500;
+        padding: 12px 28px;
+        border-radius: 10px;
+        border: none;
+        cursor: pointer;
+        transition: all 0.18s;
+        letter-spacing: 0.02em;
+      }
+
+      .btn-know {
+        background: var(--green-bg);
+        color: var(--green);
+        border: 1px solid rgba(74, 158, 106, 0.25);
+      }
+
+      .btn-know:hover {
+        background: rgba(74, 158, 106, 0.22);
+        transform: translateY(-1px);
+      }
+
+      .btn-learning {
+        background: var(--red-bg);
+        color: var(--red);
+        border: 1px solid rgba(192, 80, 80, 0.25);
+      }
+
+      .btn-learning:hover {
+        background: rgba(192, 80, 80, 0.22);
+        transform: translateY(-1px);
+      }
+
+      .nav-btn {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: var(--surface2);
+        border: 0.5px solid var(--border);
+        color: var(--text-muted);
+        cursor: pointer;
+        font-size: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.18s;
+      }
+
+      .nav-btn:hover {
+        background: var(--surface3);
+        color: var(--text);
+        border-color: var(--border2);
+      }
+      .nav-btn:disabled {
+        opacity: 0.3;
+        cursor: not-allowed;
+      }
+
+      /* ── No results ── */
+      .empty-state {
+        text-align: center;
+        color: var(--text-dim);
+        font-size: 14px;
+        padding: 60px 20px;
+      }
+
+      /* ── Toast ── */
+      .toast {
+        position: fixed;
+        bottom: 32px;
+        left: 50%;
+        transform: translateX(-50%) translateY(80px);
+        background: var(--surface2);
+        border: 0.5px solid var(--border);
+        border-radius: 10px;
+        padding: 10px 20px;
+        font-size: 13px;
+        color: var(--text-muted);
+        z-index: 1000;
+        transition: transform 0.3s ease;
+        white-space: nowrap;
+      }
+
+      .toast.show {
+        transform: translateX(-50%) translateY(0);
+      }
+
+      /* ── API key modal ── */
+      .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(4px);
+        z-index: 500;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+      }
+
+      .modal-box {
+        background: var(--surface);
+        border: 0.5px solid var(--border2);
+        border-radius: var(--radius);
+        padding: 36px;
+        width: 100%;
+        max-width: 460px;
+        position: relative;
+      }
+
+      .modal-box::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          var(--gold-dim),
+          var(--gold),
+          var(--gold-dim),
+          transparent
+        );
+        border-radius: var(--radius) var(--radius) 0 0;
+      }
+
+      .modal-title {
+        font-family: "Playfair Display", serif;
+        font-size: 24px;
+        color: var(--gold);
+        margin-bottom: 8px;
+      }
+
+      .modal-sub {
+        font-size: 13px;
+        color: var(--text-muted);
+        line-height: 1.6;
+        margin-bottom: 24px;
+      }
+
+      .modal-label {
+        font-size: 11px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--text-dim);
+        margin-bottom: 8px;
+      }
+
+      .modal-input {
+        width: 100%;
+        background: var(--surface2);
+        border: 0.5px solid var(--border);
+        border-radius: 8px;
+        color: var(--text);
+        font-family: "DM Sans", sans-serif;
+        font-size: 13px;
+        padding: 12px 16px;
+        outline: none;
+        margin-bottom: 16px;
+        transition: border-color 0.2s;
+      }
+
+      .modal-input:focus {
+        border-color: var(--gold-dim);
+      }
+
+      .modal-btn {
+        width: 100%;
+        padding: 13px;
+        background: var(--gold-dim);
+        color: var(--gold-light);
+        border: none;
+        border-radius: 8px;
+        font-family: "DM Sans", sans-serif;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        letter-spacing: 0.04em;
+        transition: all 0.18s;
+      }
+
+      .modal-btn:hover {
+        background: var(--gold);
+        color: #0e0f11;
+      }
+
+      .modal-note {
+        font-size: 11px;
+        color: var(--text-dim);
+        text-align: center;
+        margin-top: 14px;
+      }
+
+      .modal-note a {
+        color: var(--gold-dim);
+        text-decoration: none;
+      }
+
+      /* ── Keyboard hint ── */
+      .kb-hints {
+        display: flex;
+        gap: 14px;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+
+      .kb-hint {
+        font-size: 11px;
+        color: var(--text-dim);
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+
+      .kb-key {
+        background: var(--surface2);
+        border: 0.5px solid var(--border);
+        border-radius: 4px;
+        padding: 1px 7px;
+        font-size: 10px;
+        color: var(--text-dim);
+        font-family: monospace;
+      }
+
+      /* ── Exam Section ── */
+      .exam-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.85);
+        backdrop-filter: blur(12px);
+        z-index: 600;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        animation: fadeIn 0.3s ease;
+      }
+      .exam-overlay.active { display: flex; }
+
+      @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+
+      .exam-container {
+        background: var(--surface);
+        border: 0.5px solid var(--border2);
+        border-radius: var(--radius);
+        width: 100%;
+        max-width: 600px;
+        position: relative;
+        overflow: hidden;
+        animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      @keyframes slideUp {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      .exam-container::before {
+        content: "";
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, transparent, var(--gold-dim), var(--gold), var(--gold-dim), transparent);
+      }
+
+      .exam-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 20px 28px;
+        border-bottom: 0.5px solid var(--border);
+      }
+
+      .exam-title {
+        font-family: "Playfair Display", serif;
+        font-size: 20px;
+        color: var(--gold);
+      }
+
+      .exam-meta {
+        display: flex;
+        gap: 14px;
+        align-items: center;
+      }
+
+      .exam-timer {
+        font-size: 13px;
+        color: var(--text-muted);
+        font-variant-numeric: tabular-nums;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+
+      .exam-timer::before {
+        content: "⏱";
+        font-size: 14px;
+      }
+
+      .exam-close {
+        width: 32px; height: 32px;
+        border-radius: 50%;
+        background: var(--surface2);
+        border: 0.5px solid var(--border);
+        color: var(--text-dim);
+        cursor: pointer;
+        font-size: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.18s;
+      }
+      .exam-close:hover { background: var(--surface3); color: var(--text); }
+
+      .exam-progress {
+        height: 3px;
+        background: var(--surface2);
+      }
+      .exam-progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, var(--gold-dim), var(--gold));
+        transition: width 0.4s ease;
+        width: 0%;
+      }
+
+      .exam-body {
+        padding: 28px;
+        max-height: 520px;
+        overflow-y: auto;
+      }
+      .exam-body::-webkit-scrollbar { width: 4px; }
+      .exam-body::-webkit-scrollbar-track { background: transparent; }
+      .exam-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+      .exam-q-number {
+        font-size: 11px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--text-dim);
+        margin-bottom: 8px;
+      }
+
+      .exam-question-word {
+        font-family: "Playfair Display", serif;
+        font-size: 36px;
+        color: var(--text);
+        margin-bottom: 6px;
+      }
+
+      .exam-prompt {
+        font-size: 13px;
+        color: var(--text-dim);
+        margin-bottom: 24px;
+      }
+
+      .exam-options {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .exam-option {
+        width: 100%;
+        text-align: left;
+        padding: 14px 18px;
+        border-radius: 10px;
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        color: var(--text);
+        font-family: "DM Sans", sans-serif;
+        font-size: 14px;
+        line-height: 1.5;
+        cursor: pointer;
+        transition: all 0.2s;
+        position: relative;
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+      }
+
+      .exam-option:hover:not(:disabled) {
+        background: var(--surface3);
+        border-color: var(--border2);
+        transform: translateX(4px);
+      }
+
+      .exam-option .opt-letter {
+        flex-shrink: 0;
+        width: 24px; height: 24px;
+        border-radius: 50%;
+        background: var(--surface3);
+        border: 0.5px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--text-dim);
+        transition: all 0.2s;
+      }
+
+      .exam-option:hover:not(:disabled) .opt-letter {
+        border-color: var(--gold-dim);
+        color: var(--gold);
+      }
+
+      .exam-option.correct {
+        background: var(--green-bg);
+        border-color: rgba(74, 158, 106, 0.4);
+      }
+      .exam-option.correct .opt-letter {
+        background: var(--green);
+        color: #fff;
+        border-color: var(--green);
+      }
+
+      .exam-option.wrong {
+        background: var(--red-bg);
+        border-color: rgba(192, 80, 80, 0.4);
+      }
+      .exam-option.wrong .opt-letter {
+        background: var(--red);
+        color: #fff;
+        border-color: var(--red);
+      }
+
+      .exam-option:disabled {
+        cursor: default;
+        opacity: 0.6;
+      }
+      .exam-option.correct:disabled,
+      .exam-option.wrong:disabled {
+        opacity: 1;
+      }
+
+      /* ── Exam Results ── */
+      .exam-results {
+        text-align: center;
+        padding: 36px 28px;
+        max-height: 520px;
+        overflow-y: auto;
+      }
+      .exam-results::-webkit-scrollbar { width: 4px; }
+      .exam-results::-webkit-scrollbar-track { background: transparent; }
+      .exam-results::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+      .results-icon {
+        font-size: 52px;
+        margin-bottom: 10px;
+      }
+
+      .results-score {
+        font-family: "Playfair Display", serif;
+        font-size: 48px;
+        color: var(--gold);
+        margin-bottom: 4px;
+      }
+
+      .results-label {
+        font-size: 14px;
+        color: var(--text-muted);
+        margin-bottom: 6px;
+      }
+
+      .results-time {
+        font-size: 12px;
+        color: var(--text-dim);
+        margin-bottom: 24px;
+      }
+
+      .results-bar-track {
+        height: 8px;
+        background: var(--surface2);
+        border-radius: 4px;
+        margin-bottom: 28px;
+        overflow: hidden;
+      }
+
+      .results-bar-fill {
+        height: 100%;
+        border-radius: 4px;
+        transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .results-bar-fill.great { background: linear-gradient(90deg, var(--green), #6fcf97); }
+      .results-bar-fill.ok { background: linear-gradient(90deg, var(--gold-dim), var(--gold)); }
+      .results-bar-fill.poor { background: linear-gradient(90deg, var(--red), #e07070); }
+
+      .results-review {
+        text-align: left;
+        margin-top: 20px;
+        border-top: 0.5px solid var(--border);
+        padding-top: 20px;
+      }
+
+      .review-title {
+        font-size: 11px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--text-dim);
+        margin-bottom: 12px;
+      }
+
+      .review-item {
+        display: flex;
+        gap: 12px;
+        padding: 10px 0;
+        border-bottom: 0.5px solid var(--border);
+        align-items: flex-start;
+      }
+
+      .review-item:last-child { border-bottom: none; }
+
+      .review-word {
+        font-family: "Playfair Display", serif;
+        font-size: 15px;
+        color: var(--text);
+        min-width: 120px;
+        flex-shrink: 0;
+      }
+
+      .review-answer {
+        font-size: 12px;
+        color: var(--text-muted);
+        line-height: 1.5;
+      }
+
+      .review-answer .correct-ans {
+        color: var(--green);
+      }
+
+      .review-answer .wrong-ans {
+        color: var(--red);
+        text-decoration: line-through;
+        margin-right: 6px;
+      }
+
+      .exam-actions {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        margin-top: 24px;
+        flex-wrap: wrap;
+      }
+
+      .exam-btn {
+        font-family: "DM Sans", sans-serif;
+        font-size: 13px;
+        font-weight: 500;
+        padding: 12px 28px;
+        border-radius: 10px;
+        border: none;
+        cursor: pointer;
+        transition: all 0.18s;
+        letter-spacing: 0.02em;
+      }
+
+      .exam-btn-primary {
+        background: var(--gold-dim);
+        color: var(--gold-light);
+      }
+      .exam-btn-primary:hover {
+        background: var(--gold);
+        color: #0e0f11;
+      }
+
+      .exam-btn-secondary {
+        background: var(--surface2);
+        color: var(--text-muted);
+        border: 0.5px solid var(--border);
+      }
+      .exam-btn-secondary:hover {
+        background: var(--surface3);
+        color: var(--text);
+      }
+      .exam-btn-danger {
+        background: rgba(192, 80, 80, 0.15);
+        color: var(--red);
+        border: 0.5px solid rgba(192, 80, 80, 0.3);
+      }
+      .exam-btn-danger:hover {
+        background: rgba(192, 80, 80, 0.3);
+      }
+
+      /* ── Exam Start Screen ── */
+      .exam-start {
+        text-align: center;
+        padding: 40px 28px;
+        max-height: 520px;
+        overflow-y: auto;
+      }
+      .exam-start::-webkit-scrollbar { width: 4px; }
+      .exam-start::-webkit-scrollbar-track { background: transparent; }
+      .exam-start::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+      .exam-start-icon {
+        font-size: 48px;
+        margin-bottom: 14px;
+      }
+
+      .exam-start-title {
+        font-family: "Playfair Display", serif;
+        font-size: 28px;
+        color: var(--gold);
+        margin-bottom: 8px;
+      }
+
+      .exam-start-desc {
+        font-size: 13px;
+        color: var(--text-muted);
+        line-height: 1.7;
+        margin-bottom: 10px;
+        max-width: 380px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      .exam-start-details {
+        display: flex;
+        gap: 24px;
+        justify-content: center;
+        margin-bottom: 28px;
+      }
+
+      .exam-detail {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .exam-detail-val {
+        font-size: 20px;
+        font-weight: 600;
+        color: var(--text);
+      }
+
+      .exam-detail-label {
+        font-size: 11px;
+        color: var(--text-dim);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .exam-source-select {
+        display: flex;
+        gap: 8px;
+        justify-content: center;
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+      }
+
+      .exam-source-btn {
+        font-family: "DM Sans", sans-serif;
+        font-size: 12px;
+        padding: 7px 16px;
+        border-radius: 8px;
+        border: 0.5px solid var(--border);
+        background: var(--surface2);
+        color: var(--text-muted);
+        cursor: pointer;
+        transition: all 0.18s;
+      }
+      .exam-source-btn:hover { background: var(--surface3); color: var(--text); }
+      .exam-source-btn.active {
+        background: var(--gold-dim);
+        color: var(--gold-light);
+        border-color: var(--gold-dim);
+      }
+      /* ── History & Analytics ── */
+      .exam-tabs {
+        display: flex;
+        border-bottom: 0.5px solid var(--border);
+      }
+
+      .exam-tab {
+        flex: 1;
+        padding: 12px;
+        text-align: center;
+        font-family: "DM Sans", sans-serif;
+        font-size: 13px;
+        font-weight: 500;
+        letter-spacing: 0.04em;
+        color: var(--text-dim);
+        background: none;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s;
+        position: relative;
+      }
+
+      .exam-tab:hover { color: var(--text-muted); }
+      .exam-tab.active {
+        color: var(--gold);
+      }
+      .exam-tab.active::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 20%;
+        right: 20%;
+        height: 2px;
+        background: var(--gold);
+        border-radius: 2px;
+      }
+
+      .analytics-body {
+        padding: 24px 28px;
+        max-height: 520px;
+        overflow-y: auto;
+      }
+
+      .analytics-body::-webkit-scrollbar { width: 4px; }
+      .analytics-body::-webkit-scrollbar-track { background: transparent; }
+      .analytics-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+      .analytics-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+        margin-bottom: 24px;
+      }
+
+      .analytics-card {
+        background: var(--surface2);
+        border: 0.5px solid var(--border);
+        border-radius: 10px;
+        padding: 14px;
+        text-align: center;
+      }
+
+      .analytics-card-val {
+        font-family: "Playfair Display", serif;
+        font-size: 24px;
+        color: var(--text);
+        margin-bottom: 2px;
+      }
+
+      .analytics-card-val.gold { color: var(--gold); }
+      .analytics-card-val.green { color: var(--green); }
+      .analytics-card-val.blue { color: var(--blue); }
+
+      .analytics-card-label {
+        font-size: 10px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--text-dim);
+      }
+
+      .analytics-section-title {
+        font-size: 11px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--text-dim);
+        margin-bottom: 12px;
+        margin-top: 4px;
+      }
+
+      .chart-container {
+        background: var(--surface2);
+        border: 0.5px solid var(--border);
+        border-radius: 10px;
+        padding: 16px;
+        margin-bottom: 24px;
+        position: relative;
+        height: 160px;
+      }
+
+      .chart-container canvas {
+        width: 100% !important;
+        height: 100% !important;
+      }
+
+      .missed-words-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-bottom: 24px;
+      }
+
+      .missed-chip {
+        font-size: 12px;
+        padding: 5px 12px;
+        border-radius: 10px;
+        background: var(--red-bg);
+        color: var(--red);
+        border: 0.5px solid rgba(192, 80, 80, 0.25);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .missed-chip .miss-count {
+        font-size: 10px;
+        font-weight: 600;
+        background: rgba(192, 80, 80, 0.3);
+        padding: 1px 5px;
+        border-radius: 6px;
+      }
+
+      .history-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .history-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 14px;
+        background: var(--surface2);
+        border: 0.5px solid var(--border);
+        border-radius: 10px;
+        transition: background 0.15s;
+      }
+
+      .history-row:hover {
+        background: var(--surface3);
+      }
+
+      .history-date {
+        font-size: 12px;
+        color: var(--text-muted);
+        min-width: 100px;
+      }
+
+      .history-date-day {
+        font-weight: 500;
+        color: var(--text);
+        font-size: 13px;
+      }
+
+      .history-date-time {
+        font-size: 11px;
+        color: var(--text-dim);
+      }
+
+      .history-score-ring {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        font-weight: 600;
+        flex-shrink: 0;
+      }
+
+      .history-score-ring.great {
+        background: var(--green-bg);
+        color: var(--green);
+        border: 1.5px solid rgba(74, 158, 106, 0.3);
+      }
+      .history-score-ring.ok {
+        background: rgba(201, 168, 76, 0.1);
+        color: var(--gold);
+        border: 1.5px solid rgba(201, 168, 76, 0.25);
+      }
+      .history-score-ring.poor {
+        background: var(--red-bg);
+        color: var(--red);
+        border: 1.5px solid rgba(192, 80, 80, 0.3);
+      }
+
+      .history-details {
+        flex: 1;
+        font-size: 12px;
+        color: var(--text-dim);
+      }
+
+      .history-detail-source {
+        font-size: 11px;
+        padding: 2px 8px;
+        border-radius: 6px;
+        background: var(--surface3);
+        color: var(--text-dim);
+        border: 0.5px solid var(--border);
+      }
+
+      .history-empty {
+        text-align: center;
+        padding: 40px 20px;
+        color: var(--text-dim);
+        font-size: 14px;
+      }
+
+      .history-empty-icon {
+        font-size: 36px;
+        margin-bottom: 10px;
+      }
+
+      .clear-history-btn {
+        font-family: "DM Sans", sans-serif;
+        font-size: 11px;
+        padding: 6px 14px;
+        border-radius: 6px;
+        border: 0.5px solid rgba(192, 80, 80, 0.25);
+        background: var(--red-bg);
+        color: var(--red);
+        cursor: pointer;
+        transition: all 0.18s;
+        margin-top: 16px;
+      }
+      .clear-history-btn:hover {
+        background: rgba(192, 80, 80, 0.2);
+      }
+
+      /* ── Time & Date Widget ── */
+      .datetime-widget {
+        position: fixed;
+        bottom: 24px;
+        left: 24px;
+        background: rgba(31, 34, 40, 0.7);
+        border: 0.5px solid var(--border);
+        border-radius: 12px;
+        padding: 12px 18px;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 2px;
+        z-index: 100;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        backdrop-filter: blur(8px);
+        transition: transform 0.2s, border-color 0.2s;
+        cursor: default;
+      }
+
+      .datetime-widget:hover {
+        transform: translateY(-2px);
+        border-color: var(--gold-dim);
+      }
+
+      .time-display {
+        font-family: "Playfair Display", serif;
+        font-size: 20px;
+        color: var(--gold);
+        letter-spacing: 0.02em;
+      }
+
+      .date-display {
+        font-family: "DM Sans", sans-serif;
+        font-size: 11px;
+        color: var(--text-dim);
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+      }
+
+      @media (max-width: 700px) {
+        :root {
+          --card-h: 380px;
+        }
+        .word-text {
+          font-size: 40px;
+        }
+        header {
+          padding: 14px 18px;
+        }
+        .controls {
+          padding: 10px 18px;
+        }
+        main {
+          padding: 20px 14px;
+          gap: 18px;
+        }
+        .back-content {
+          padding: 20px 22px;
+        }
+        .modal-box {
+          padding: 24px;
+        }
+        .exam-body { padding: 20px; }
+        .exam-question-word { font-size: 28px; }
+        .exam-results { padding: 24px 20px; }
+        .exam-start { padding: 28px 20px; }
+        .analytics-grid { grid-template-columns: repeat(2, 1fr); }
+        .analytics-body { padding: 16px 20px; }
+        .history-date { min-width: 80px; }
+        .datetime-widget {
+          bottom: 12px;
+          left: 12px;
+          padding: 8px 14px;
+        }
+        .time-display {
+          font-size: 16px;
+        }
+        .date-display {
+          font-size: 9px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+
+
+    <!-- App -->
+    <header>
+      <div class="logo">
+        <svg class="logo-mark" width="38" height="38" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="headerGrad" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stop-color="#e8d5a3"/>
+              <stop offset="50%" stop-color="#c9a84c"/>
+              <stop offset="100%" stop-color="#8a6f2e"/>
+            </linearGradient>
+          </defs>
+          <path d="M 5 20 L 32 20 L 50 45 L 68 20 L 95 20 L 50 95 Z" fill="rgba(201,168,76,0.1)"/>
+          <path d="M 5 20 L 32 20 L 50 45 L 68 20 L 95 20 L 50 95 Z" stroke="url(#headerGrad)" stroke-width="4" stroke-linejoin="round"/>
+          <path d="M 32 20 L 50 95 M 68 20 L 50 95" stroke="url(#headerGrad)" stroke-width="2" opacity="0.4"/>
+          <path d="M 22 35 L 50 82 L 78 35" stroke="url(#headerGrad)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="50" cy="58" r="4" fill="#e8d5a3"/>
+        </svg>
+        <div class="logo-text">VEMC <span>Vocabulary Trainer</span></div>
+      </div>
+      <div class="header-stats">
+        <div class="stat-pill green">Known: <b id="knownCount">0</b></div>
+        <div class="stat-pill red">Learning: <b id="learningCount">0</b></div>
+        <div class="stat-pill">Total: <b>332</b></div>
+        <button class="btn danger" onclick="resetProgress()" style="display: inline-flex; align-items: center; gap: 6px;">
+          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+            <path d="M3 3v5h5"></path>
+          </svg>
+          Reset
+        </button>
+        <button class="btn" id="btnExam" onclick="openExam()" style="display: inline-flex; align-items: center; gap: 6px;">
+          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+            <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+            <path d="M9 14l2 2 4-4"></path>
+          </svg>
+          Exam
+        </button>
+        <button class="btn" onclick="openAbout()" style="display: inline-flex; align-items: center; gap: 6px;">
+          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="16" x2="12" y2="12"></line>
+            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+          </svg>
+          About
+        </button>
+      </div>
+    </header>
+
+    <div class="progress-track">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+
+    <div class="controls">
+      <div class="search-wrap">
+        <svg class="search-icon" style="margin-top:-2px;" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <input
+          type="text"
+          id="searchInput"
+          placeholder="Search words…"
+          oninput="handleSearch()"
+        />
+      </div>
+      <div class="divider"></div>
+      <button class="btn" id="btnAll" onclick="setFilter('all')" style="display: inline-flex; align-items: center; gap: 6px;">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 12 12 17 22 12"></polyline><polyline points="2 17 12 22 22 17"></polyline></svg>
+        All
+      </button>
+      <button class="btn" id="btnKnown" onclick="setFilter('known')" style="display: inline-flex; align-items: center; gap: 6px;">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+        Known
+      </button>
+      <button class="btn" id="btnLearning" onclick="setFilter('learning')" style="display: inline-flex; align-items: center; gap: 6px;">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+        Learning
+      </button>
+      <button class="btn" id="btnUnseen" onclick="setFilter('unseen')" style="display: inline-flex; align-items: center; gap: 6px;">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle><line x1="2" y1="2" x2="22" y2="22"></line></svg>
+        Unseen
+      </button>
+      <div class="divider"></div>
+      <button class="btn" id="btnShuffle" onclick="toggleShuffle()" style="display: inline-flex; align-items: center; gap: 6px;">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg>
+        Shuffle
+      </button>
+    </div>
+
+    <main>
+      <div class="counter" id="counter">— / —</div>
+
+      <div class="card-scene" id="cardScene" onclick="flipCard()">
+        <div class="card-inner" id="cardInner">
+          <div class="card-face front-face">
+            <div class="front-content">
+              <div class="word-index" id="wordIndex"></div>
+              <div class="word-status" id="wordStatus"></div>
+              <div class="word-text" id="wordText">—</div>
+              <div class="flip-hint">tap to reveal</div>
+            </div>
+          </div>
+          <div class="card-face card-back">
+            <div class="back-content" id="backContent">
+              <div class="loading-shimmer">
+                <div class="shimmer-line" style="width: 40%"></div>
+                <div class="shimmer-line" style="width: 80%"></div>
+                <div class="shimmer-line" style="width: 65%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-actions">
+        <button class="nav-btn" id="prevBtn" onclick="navigate(-1)">
+          &#8592;
+        </button>
+        <button class="action-btn btn-know" onclick="markCard('known')">
+          ✓ Know it
+        </button>
+        <button class="action-btn btn-learning" onclick="markCard('learning')">
+          ✗ Still learning
+        </button>
+        <button class="nav-btn" id="nextBtn" onclick="navigate(1)">
+          &#8594;
+        </button>
+      </div>
+
+      <div class="kb-hints">
+        <span class="kb-hint"><span class="kb-key">Space</span> flip card</span>
+        <span class="kb-hint"
+          ><span class="kb-key">←</span
+          ><span class="kb-key">→</span> navigate</span
+        >
+        <span class="kb-hint"><span class="kb-key">K</span> know it</span>
+        <span class="kb-hint"
+          ><span class="kb-key">L</span> still learning</span
+        >
+      </div>
+    </main>
+
+    <div class="toast" id="toast"></div>
+
+    <!-- Confirm Overlay -->
+    <div class="exam-overlay" id="confirmOverlay" style="z-index: 800;">
+      <div class="exam-container" style="max-width: 360px; animation: slideUp 0.2s cubic-bezier(0.4, 0, 0.2, 1);">
+        <div class="exam-body" style="padding: 32px 28px; text-align: center;">
+          <div style="color: var(--red); display: flex; justify-content: center; margin-bottom: 20px;">
+            <svg width="46" height="46" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+          </div>
+          <h3 style="font-family: 'Playfair Display', serif; color: var(--text); margin-bottom: 12px; font-weight: normal; font-size: 22px;">Confirm Action</h3>
+          <p id="confirmMessage" style="font-size: 14px; color: var(--text-muted); line-height: 1.5; margin-bottom: 32px;">Are you sure?</p>
+          <div style="display: flex; gap: 12px; justify-content: center;">
+            <button class="exam-btn exam-btn-secondary" id="confirmCancelBtn" style="flex: 1;">Cancel</button>
+            <button class="exam-btn exam-btn-danger" id="confirmOkBtn" style="flex: 1;">Proceed</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- About Overlay -->
+    <div class="exam-overlay" id="aboutOverlay" style="z-index: 700;">
+      <div class="exam-container" style="max-width: 480px; animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
+        <div class="exam-header">
+          <div class="exam-title">About VEMC</div>
+          <button class="exam-close" onclick="closeAbout()">
+            <svg width="14" height="14" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+        </div>
+        <div class="exam-body" style="padding: 32px 28px; text-align: center;">
+          <div style="margin-bottom: 24px; display: flex; justify-content: center;">
+            <svg width="72" height="72" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="aboutGrad" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse">
+                  <stop offset="0%" stop-color="#e8d5a3"/>
+                  <stop offset="50%" stop-color="#c9a84c"/>
+                  <stop offset="100%" stop-color="#8a6f2e"/>
+                </linearGradient>
+              </defs>
+              <path d="M 5 20 L 32 20 L 50 45 L 68 20 L 95 20 L 50 95 Z" fill="rgba(201,168,76,0.1)"/>
+              <path d="M 5 20 L 32 20 L 50 45 L 68 20 L 95 20 L 50 95 Z" stroke="url(#aboutGrad)" stroke-width="4" stroke-linejoin="round"/>
+              <path d="M 32 20 L 50 95 M 68 20 L 50 95" stroke="url(#aboutGrad)" stroke-width="2" opacity="0.4"/>
+              <path d="M 22 35 L 50 82 L 78 35" stroke="url(#aboutGrad)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="50" cy="58" r="4" fill="#e8d5a3"/>
+            </svg>
+          </div>
+          <h2 style="font-family: 'Playfair Display', serif; color: var(--gold); margin-bottom: 12px; font-weight: normal;">VEMC Vocabulary Trainer</h2>
+          <p style="font-size: 14px; color: var(--text-muted); line-height: 1.6; margin-bottom: 24px;">
+            A fast, minimalistic flashcard tool designed for mastering vocabulary. It utilizes the Free Dictionary API and Google Translate to provide English meanings, Bengali translations, and contextual examples automatically.
+            <br><br>
+            Created by <b style="color: var(--text);">Sakib Nawar Tanmoy</b>.
+            
+            <div style="display: flex; gap: 16px; justify-content: center; align-items: center; margin-top: 16px; margin-bottom: 24px;">
+              <a href="https://github.com/sakibntanmoy006" target="_blank" style="color: var(--text-dim); text-decoration: none; display: flex; align-items: center; gap: 6px; font-size: 13px; transition: color 0.2s;" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--text-dim)'">
+                <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                GitHub
+              </a>
+              <a href="https://www.linkedin.com/in/snt006/" target="_blank" style="color: var(--text-dim); text-decoration: none; display: flex; align-items: center; gap: 6px; font-size: 13px; transition: color 0.2s;" onmouseover="this.style.color='var(--blue)'" onmouseout="this.style.color='var(--text-dim)'">
+                <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+                LinkedIn
+              </a>
+            </div>
+          </p>
+          <div style="background: var(--surface2); padding: 16px; border-radius: 8px; border: 0.5px solid var(--border); margin-bottom: 24px;">
+            <div style="font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px;">What does VEMC mean?</div>
+            <div style="font-size: 16px; color: var(--text); font-weight: 500;">VEMC = "ভোক্যাব এর মায়েরে ছু*দি"</div>
+          </div>
+          <div style="font-size: 12px; color: var(--text-dim); font-style: italic;">
+            Made for pushing through the grind of vocabulary learning without mercy.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Exam Overlay -->
+    <div class="exam-overlay" id="examOverlay">
+      <div class="exam-container" id="examContainer">
+        <!-- content injected by JS -->
+      </div>
+    </div>
+
+    <!-- Time & Date Widget -->
+    <div class="datetime-widget">
+      <div class="time-display" id="timeDisplay">--:--</div>
+      <div class="date-display" id="dateDisplay">-- --- ----</div>
+    </div>
+
+    <script>
+      const WORDS = [
+        "Log",
+        "Aver",
+        "Coda",
+        "Dupe",
+        "Flag",
+        "Goad",
+        "Laud",
+        "Sage",
+        "Wary",
+        "Abate",
+        "Banal",
+        "Belie",
+        "Daunt",
+        "Dirge",
+        "Elegy",
+        "Flout",
+        "Gouge",
+        "Inert",
+        "Levee",
+        "Lucid",
+        "Piety",
+        "Savor",
+        "Shard",
+        "Stint",
+        "Strut",
+        "Tacit",
+        "Apathy",
+        "Cogent",
+        "Craven",
+        "Deride",
+        "Divest",
+        "Elicit",
+        "Eulogy",
+        "Fervor",
+        "Foment",
+        "Futile",
+        "Impair",
+        "Impede",
+        "Inured",
+        "Latent",
+        "Levity",
+        "Morose",
+        "Negate",
+        "Penury",
+        "Porous",
+        "Recant",
+        "Refute",
+        "Stigma",
+        "Stolid",
+        "Tirade",
+        "Torpor",
+        "Viable",
+        "Welter",
+        "Zealot",
+        "Abscond",
+        "Anarchy",
+        "Appease",
+        "Apprise",
+        "Arduous",
+        "Artless",
+        "Ascetic",
+        "Assuage",
+        "Austere",
+        "Bolster",
+        "Boorish",
+        "Burgeon",
+        "Burnish",
+        "Caustic",
+        "Condone",
+        "Decorum",
+        "Default",
+        "Diffuse",
+        "Dismiss",
+        "Distend",
+        "Distill",
+        "Diverge",
+        "Dormant",
+        "Emulate",
+        "Endemic",
+        "Enhance",
+        "Erudite",
+        "Fatuous",
+        "Fawning",
+        "Gainsay",
+        "Implode",
+        "Insipid",
+        "Laconic",
+        "Mollify",
+        "Mundane",
+        "Obviate",
+        "Occlude",
+        "Onerous",
+        "Paragon",
+        "Paucity",
+        "Placate",
+        "Plummet",
+        "Probity",
+        "Pungent",
+        "Quibble",
+        "Recluse",
+        "Rescind",
+        "Resolve",
+        "Satiate",
+        "Secrete",
+        "Skeptic",
+        "Subside",
+        "Tenuous",
+        "Verbose",
+        "Viscous",
+        "Aberrant",
+        "Abeyance",
+        "Admonish",
+        "Alacrity",
+        "Buttress",
+        "Catalyst",
+        "Confound",
+        "Contrite",
+        "Converge",
+        "Diatribe",
+        "Disabuse",
+        "Discrete",
+        "Document",
+        "Dogmatic",
+        "Eclectic",
+        "Efficacy",
+        "Enervate",
+        "Engender",
+        "Esoteric",
+        "Exigency",
+        "Gullible",
+        "Harangue",
+        "Idolatry",
+        "Implicit",
+        "Inchoate",
+        "Indolent",
+        "Inherent",
+        "Inundate",
+        "Luminous",
+        "Maverick",
+        "Mitigate",
+        "Neophyte",
+        "Obdurate",
+        "Partisan",
+        "Pedantic",
+        "Penchant",
+        "Plethora",
+        "Preamble",
+        "Pristine",
+        "Prodigal",
+        "Profound",
+        "Rarefied",
+        "Relegate",
+        "Reproach",
+        "Reticent",
+        "Reverent",
+        "Sanction",
+        "Saturate",
+        "Specious",
+        "Spectrum",
+        "Sporadic",
+        "Striated",
+        "Subpoena",
+        "Tortuous",
+        "Venerate",
+        "Volatile",
+        "Aesthetic",
+        "Aggregate",
+        "Alleviate",
+        "Ambiguous",
+        "Analogous",
+        "Anomalous",
+        "Antipathy",
+        "Assiduous",
+        "Attenuate",
+        "Audacious",
+        "Bombastic",
+        "Chicanery",
+        "Coagulate",
+        "Compliant",
+        "Conundrum",
+        "Deference",
+        "Delineate",
+        "Denigrate",
+        "Desiccate",
+        "Desultory",
+        "Deterrent",
+        "Dichotomy",
+        "Discredit",
+        "Disparage",
+        "Disparate",
+        "Dissemble",
+        "Ebullient",
+        "Embellish",
+        "Empirical",
+        "Ephemeral",
+        "Euphemism",
+        "Exculpate",
+        "Facetious",
+        "Fledgling",
+        "Forestall",
+        "Frugality",
+        "Garrulous",
+        "Guileless",
+        "Hyperbole",
+        "Immutable",
+        "Impassive",
+        "Indigence",
+        "Ingenuous",
+        "Innocuous",
+        "Insinuate",
+        "Invective",
+        "Irascible",
+        "Itinerary",
+        "Lassitude",
+        "Lethargic",
+        "Malleable",
+        "Officious",
+        "Oscillate",
+        "Perennial",
+        "Permeable",
+        "Pervasive",
+        "Platitude",
+        "Pragmatic",
+        "Precursor",
+        "Propriety",
+        "Proscribe",
+        "Qualified",
+        "Quiescent",
+        "Recondite",
+        "Reprobate",
+        "Repudiate",
+        "Soporific",
+        "Stipulate",
+        "Supersede",
+        "Tractable",
+        "Vacillate",
+        "Veracious",
+        "Warranted",
+        "Whimsical",
+        "Abstemious",
+        "Adulterate",
+        "Amalgamate",
+        "Ameliorate",
+        "Autonomous",
+        "Beneficent",
+        "Capricious",
+        "Compendium",
+        "Contention",
+        "Convoluted",
+        "Derivative",
+        "Diffidence",
+        "Digression",
+        "Discerning",
+        "Discordant",
+        "Disjointed",
+        "Dissonance",
+        "Effrontery",
+        "Equanimity",
+        "Equivocate",
+        "Exacerbate",
+        "Facilitate",
+        "Fallacious",
+        "Felicitous",
+        "Gregarious",
+        "Impervious",
+        "Implacable",
+        "Insensible",
+        "Insularity",
+        "Irresolute",
+        "Loquacious",
+        "Malingerer",
+        "Mendacious",
+        "Meticulous",
+        "Obsequious",
+        "Opprobrium",
+        "Perfidious",
+        "Phlegmatic",
+        "Plasticity",
+        "Precarious",
+        "Propensity",
+        "Propitiate",
+        "Refractory",
+        "Resolution",
+        "Salubrious",
+        "Solicitous",
+        "Tangential",
+        "Truculence",
+        "Ambivalence",
+        "Anachronism",
+        "Approbation",
+        "Appropriate",
+        "Castigation",
+        "Complaisant",
+        "Connoisseur",
+        "Contentious",
+        "Discrepancy",
+        "Disseminate",
+        "Dissolution",
+        "Homogeneous",
+        "Impermeable",
+        "Incongruity",
+        "Incorporate",
+        "Intractable",
+        "Magnanimity",
+        "Misanthrope",
+        "Perfunctory",
+        "Precipitate",
+        "Prevaricate",
+        "Problematic",
+        "Prohibitive",
+        "Proliferate",
+        "Supposition",
+        "Commensurate",
+        "Conciliatory",
+        "Disingenuous",
+        "Iconoclastic",
+        "Ostentatious",
+        "Pathological",
+        "Presumptuous",
+        "Recalcitrant",
+        "Substantiate",
+        "Vituperative",
+        "Disinterested",
+        "Extrapolation",
+        "Grandiloquent",
+        "Imperturbable",
+        "Inadvertently",
+        "Indeterminate",
+        "Intransigence",
+        "Metamorphosis",
+        "Transgression",
+        "Inconsequential",
+      ];
+
+      let progress = JSON.parse(
+        localStorage.getItem("lexicon_progress") || "{}",
+      );
+      let cache = JSON.parse(localStorage.getItem("lexicon_cache") || "{}");
+      let filter = "all";
+      let shuffle = false;
+      let filtered = [];
+      let order = [];
+      let currentIdx = 0;
+      let isFlipped = false;
+      let isFetching = false;
+
+      function init() {
+        buildFiltered();
+        renderCard();
+      }
+
+      function buildFiltered() {
+        const q = document
+          .getElementById("searchInput")
+          .value.trim()
+          .toLowerCase();
+        filtered = WORDS.filter((w) => {
+          if (q && !w.toLowerCase().includes(q)) return false;
+          if (filter === "known") return progress[w] === "known";
+          if (filter === "learning") return progress[w] === "learning";
+          if (filter === "unseen") return !progress[w];
+          return true;
+        });
+        if (shuffle) {
+          order = filtered.map((_, i) => i).sort(() => Math.random() - 0.5);
+        } else {
+          order = filtered.map((_, i) => i);
+        }
+        if (currentIdx >= order.length) currentIdx = 0;
+      }
+
+      function currentWord() {
+        if (!order.length) return null;
+        return filtered[order[currentIdx]];
+      }
+
+      function renderCard() {
+        const word = currentWord();
+        updateStats();
+        updateProgress();
+
+        if (!word) {
+          document.getElementById("counter").textContent = "0 / 0";
+          document.getElementById("wordText").textContent = "No words";
+          document.getElementById("wordIndex").textContent = "";
+          document.getElementById("wordStatus").textContent = "";
+          document.getElementById("wordStatus").className = "word-status";
+          setFlipped(false);
+          return;
+        }
+
+        document.getElementById("counter").textContent =
+          `${currentIdx + 1} / ${order.length}`;
+        document.getElementById("wordText").textContent = word;
+        document.getElementById("wordIndex").textContent =
+          `#${WORDS.indexOf(word) + 1}`;
+
+        const st = progress[word];
+        const statusEl = document.getElementById("wordStatus");
+        if (st === "known") {
+          statusEl.textContent = "Known";
+          statusEl.className = "word-status known";
+        } else if (st === "learning") {
+          statusEl.textContent = "Learning";
+          statusEl.className = "word-status learning";
+        } else {
+          statusEl.textContent = "";
+          statusEl.className = "word-status";
+        }
+
+        document.getElementById("prevBtn").disabled = currentIdx === 0;
+        document.getElementById("nextBtn").disabled =
+          currentIdx === order.length - 1;
+
+        setFlipped(false);
+      }
+
+      function setFlipped(val) {
+        isFlipped = val;
+        const scene = document.getElementById("cardScene");
+        if (val) scene.classList.add("flipped");
+        else scene.classList.remove("flipped");
+      }
+
+      async function flipCard() {
+        if (isFlipped) {
+          setFlipped(false);
+          return;
+        }
+        const word = currentWord();
+        if (!word) return;
+        setFlipped(true);
+        if (cache[word]) {
+          renderBack(cache[word]);
+          return;
+        }
+        renderBackLoading();
+        if (isFetching) return;
+        isFetching = true;
+        try {
+          const dictRes = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word)}`);
+          const dictData = dictRes.ok ? await dictRes.json() : [];
+          
+          let pos = "", meaning_en = "", example = "", synonyms = [];
+          if (Array.isArray(dictData) && dictData.length > 0) {
+            const entry = dictData[0];
+            if (entry.meanings && entry.meanings.length > 0) {
+              const meaning = entry.meanings[0];
+              pos = meaning.partOfSpeech || "";
+              if (meaning.definitions && meaning.definitions.length > 0) {
+                meaning_en = meaning.definitions[0].definition || "";
+                example = meaning.definitions[0].example || "";
+              }
+              synonyms = meaning.synonyms || [];
+              if (synonyms.length === 0 && entry.meanings.length > 1) {
+                synonyms = entry.meanings.flatMap(m => m.synonyms || []);
+              }
+            }
+          }
+
+          const trRes = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=bn&dt=t&q=${encodeURIComponent(word)}`);
+          let meaning_bn = "";
+          if (trRes.ok) {
+             const trData = await trRes.json();
+             meaning_bn = trData?.[0]?.[0]?.[0] || "";
+          }
+
+          const parsed = {
+            pos: pos,
+            meaning_en: meaning_en || "Definition not found.",
+            meaning_bn: meaning_bn || "Translation not found.",
+            synonyms: synonyms.slice(0, 4),
+            example: example || "No example available."
+          };
+
+          cache[word] = parsed;
+          localStorage.setItem("lexicon_cache", JSON.stringify(cache));
+          renderBack(parsed);
+        } catch (e) {
+          document.getElementById("backContent").innerHTML =
+            `<div style="color:var(--red);font-size:13px;margin-top:20px;">Error: ${e.message}</div>`;
+        } finally {
+          isFetching = false;
+        }
+      }
+
+      function renderBackLoading() {
+        document.getElementById("backContent").innerHTML = `
+    <div class="back-word">${currentWord()}</div>
+    <div class="separator"></div>
+    <div class="loading-shimmer" style="margin-top:10px">
+      <div class="shimmer-line" style="width:30%"></div>
+      <div class="shimmer-line" style="width:75%"></div>
+      <div class="shimmer-line" style="width:85%"></div>
+      <div class="shimmer-line" style="width:60%"></div>
+      <div class="shimmer-line" style="width:90%"></div>
+    </div>`;
+      }
+
+      function renderBack(d) {
+        const syns = (d.synonyms || [])
+          .map((s) => `<span class="syn-chip">${s}</span>`)
+          .join("");
+        document.getElementById("backContent").innerHTML = `
+    <div class="back-word">${currentWord()}</div>
+    <div class="separator"></div>
+    <div class="info-row">
+      <div class="info-label">Type</div>
+      <div class="info-val"><span class="pos-badge">${d.pos || "—"}</span></div>
+    </div>
+    <div class="info-row">
+      <div class="info-label">Meaning</div>
+      <div class="info-val">${d.meaning_en || "—"}</div>
+    </div>
+    <div class="info-row">
+      <div class="info-label">বাংলা</div>
+      <div class="info-val bengali">${d.meaning_bn || "—"}</div>
+    </div>
+    <div class="separator"></div>
+    <div class="info-row">
+      <div class="info-label">Synonyms</div>
+      <div class="info-val"><div class="synm-wrap">${syns}</div></div>
+    </div>
+    <div class="info-row">
+      <div class="info-label">Example</div>
+      <div class="info-val example-text">${d.example || "—"}</div>
+    </div>`;
+      }
+
+      function navigate(dir) {
+        currentIdx = Math.max(0, Math.min(order.length - 1, currentIdx + dir));
+        renderCard();
+      }
+
+      function markCard(status) {
+        const word = currentWord();
+        if (!word) return;
+        progress[word] = status;
+        localStorage.setItem("lexicon_progress", JSON.stringify(progress));
+        showToast(
+          status === "known" ? "✓ Marked as known" : "✗ Added to review list",
+        );
+        updateStats();
+        renderCard();
+        setTimeout(() => navigate(1), 350);
+      }
+
+      function setFilter(f) {
+        filter = f;
+        ["all", "known", "learning", "unseen"].forEach((id) => {
+          const el = document.getElementById(
+            "btn" + id.charAt(0).toUpperCase() + id.slice(1),
+          );
+          if (el) el.classList.toggle("active", id === f);
+        });
+        currentIdx = 0;
+        buildFiltered();
+        renderCard();
+      }
+
+      function toggleShuffle() {
+        shuffle = !shuffle;
+        document
+          .getElementById("btnShuffle")
+          .classList.toggle("active", shuffle);
+        buildFiltered();
+        currentIdx = 0;
+        renderCard();
+        showToast(shuffle ? "Shuffle on" : "Shuffle off");
+      }
+
+      function handleSearch() {
+        currentIdx = 0;
+        buildFiltered();
+        renderCard();
+      }
+
+      function updateStats() {
+        const known = Object.values(progress).filter(
+          (v) => v === "known",
+        ).length;
+        const learning = Object.values(progress).filter(
+          (v) => v === "learning",
+        ).length;
+        document.getElementById("knownCount").textContent = known;
+        document.getElementById("learningCount").textContent = learning;
+      }
+
+      function updateProgress() {
+        const pct = order.length ? ((currentIdx + 1) / order.length) * 100 : 0;
+        document.getElementById("progressFill").style.width = pct + "%";
+      }
+
+      function showConfirm(msg, okText, onConfirm) {
+        document.getElementById('confirmMessage').textContent = msg;
+        document.getElementById('confirmOkBtn').textContent = okText;
+        const overlay = document.getElementById('confirmOverlay');
+        overlay.classList.add('active');
+        
+        const okHandler = () => {
+          cleanup();
+          onConfirm();
+        };
+        const cancelHandler = (e) => {
+          if (e && e.target !== e.currentTarget) return;
+          cleanup();
+        };
+        const cleanup = () => {
+          overlay.classList.remove('active');
+          document.getElementById('confirmOkBtn').removeEventListener('click', okHandler);
+          document.getElementById('confirmCancelBtn').removeEventListener('click', cancelHandler);
+          overlay.removeEventListener('click', cancelHandler);
+        };
+        document.getElementById('confirmOkBtn').addEventListener('click', okHandler);
+        document.getElementById('confirmCancelBtn').addEventListener('click', cancelHandler);
+        overlay.addEventListener('click', cancelHandler);
+      }
+
+      function resetProgress() {
+        showConfirm("Reset all progress? This will clear your known and learning status.", "Reset", () => {
+          progress = {};
+          localStorage.removeItem("lexicon_progress");
+          buildFiltered();
+          renderCard();
+          showToast("Progress reset");
+        });
+      }
+
+      let toastTimer;
+      function showToast(msg) {
+        const t = document.getElementById("toast");
+        t.textContent = msg;
+        t.classList.add("show");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => t.classList.remove("show"), 2000);
+      }
+
+      document.addEventListener("keydown", (e) => {
+        if (e.target.tagName === "INPUT") return;
+        if (e.key === " ") {
+          e.preventDefault();
+          flipCard();
+        }
+        if (e.key === "ArrowRight") navigate(1);
+        if (e.key === "ArrowLeft") navigate(-1);
+        if (e.key.toLowerCase() === "k") markCard("known");
+        if (e.key.toLowerCase() === "l") markCard("learning");
+      });
+
+      /* ═══════════════════════════════════
+         EXAM MODULE
+         ═══════════════════════════════════ */
+      let examQuestions = [];
+      let examIdx = 0;
+      let examScore = 0;
+      let examAnswers = [];  // { word, correct, chosen, options }
+      let examTimer = null;
+      let examSeconds = 0;
+      let examSource = 'all'; // 'all', 'known', 'learning', 'unseen'
+      let examHistory = JSON.parse(localStorage.getItem('lexicon_exam_history') || '[]');
+      let examTab = 'start'; // 'start' or 'history'
+
+      function openExam() {
+        // Check if we have enough cached definitions
+        const available = getExamPool();
+        if (available.length < 10) {
+          showToast(`Need at least 10 words with definitions (have ${available.length}). Flip more cards first!`);
+          return;
+        }
+        showExamStart();
+        document.getElementById('examOverlay').classList.add('active');
+      }
+
+      function closeExam() {
+        document.getElementById('examOverlay').classList.remove('active');
+        clearInterval(examTimer);
+        examTab = 'start';
+      }
+
+      function getExamPool() {
+        return WORDS.filter(w => {
+          if (!cache[w] || !cache[w].meaning_en || cache[w].meaning_en === 'Definition not found.') return false;
+          if (examSource === 'known') return progress[w] === 'known';
+          if (examSource === 'learning') return progress[w] === 'learning';
+          if (examSource === 'unseen') return !progress[w];
+          return true;
+        });
+      }
+
+      function showExamStart() {
+        examTab = 'start';
+        const pool = getExamPool();
+        const container = document.getElementById('examContainer');
+        container.innerHTML = `
+          <div class="exam-header">
+            <div class="exam-title">Vocabulary Exam</div>
+            <button class="exam-close" onclick="closeExam()">
+              <svg width="14" height="14" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+          </div>
+          <div class="exam-tabs">
+            <button class="exam-tab active" onclick="showExamStart()" style="display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="18" x2="12" y2="12"></line><line x1="9" y1="15" x2="15" y2="15"></line></svg>
+              New Exam
+            </button>
+            <button class="exam-tab" onclick="showExamHistory()" style="display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+              History & Analytics
+            </button>
+          </div>
+          <div class="exam-start">
+            <div class="exam-start-icon" style="color: var(--gold); display: flex; justify-content: center; margin-bottom: 16px;">
+              <svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+                <path d="M9 14l2 2 4-4"></path>
+              </svg>
+            </div>
+            <div class="exam-start-title">Test Your Knowledge</div>
+            <div class="exam-start-desc">
+              Answer 10 multiple-choice questions. For each word, pick the correct definition from 4 options.
+            </div>
+            <div class="exam-start-details">
+              <div class="exam-detail">
+                <div class="exam-detail-val">10</div>
+                <div class="exam-detail-label">Questions</div>
+              </div>
+              <div class="exam-detail">
+                <div class="exam-detail-val">4</div>
+                <div class="exam-detail-label">Options each</div>
+              </div>
+              <div class="exam-detail">
+                <div class="exam-detail-val">${pool.length}</div>
+                <div class="exam-detail-label">Word pool</div>
+              </div>
+            </div>
+            <div style="font-size:11px;color:var(--text-dim);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:10px;">Source</div>
+            <div class="exam-source-select">
+              <button class="exam-source-btn ${examSource==='all'?'active':''}" onclick="setExamSource('all')">All</button>
+              <button class="exam-source-btn ${examSource==='known'?'active':''}" onclick="setExamSource('known')">Known</button>
+              <button class="exam-source-btn ${examSource==='learning'?'active':''}" onclick="setExamSource('learning')">Learning</button>
+              <button class="exam-source-btn ${examSource==='unseen'?'active':''}" onclick="setExamSource('unseen')">Unseen</button>
+            </div>
+            <div class="exam-actions">
+              <button class="exam-btn exam-btn-primary" onclick="startExam()" style="display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                Begin Exam
+              </button>
+            </div>
+          </div>
+        `;
+      }
+
+      function setExamSource(src) {
+        examSource = src;
+        showExamStart();
+      }
+
+      function startExam() {
+        const pool = getExamPool();
+        if (pool.length < 10) {
+          showToast(`Not enough words in this category (${pool.length}/10). Try "All".`);
+          return;
+        }
+
+        // Pick 10 random words
+        const shuffled = [...pool].sort(() => Math.random() - 0.5);
+        const selected = shuffled.slice(0, 10);
+
+        examQuestions = selected.map(word => {
+          const correctDef = cache[word].meaning_en;
+          // Pick 3 distractor definitions from other words
+          const otherWords = pool.filter(w => w !== word).sort(() => Math.random() - 0.5);
+          const distractors = otherWords.slice(0, 3).map(w => cache[w].meaning_en);
+          // Combine and shuffle options
+          const options = [correctDef, ...distractors].sort(() => Math.random() - 0.5);
+          return { word, correctDef, options };
+        });
+
+        examIdx = 0;
+        examScore = 0;
+        examAnswers = [];
+        examSeconds = 0;
+        clearInterval(examTimer);
+        examTimer = setInterval(() => {
+          examSeconds++;
+          const timerEl = document.getElementById('examTimerDisplay');
+          if (timerEl) timerEl.textContent = formatTime(examSeconds);
+        }, 1000);
+
+        renderExamQuestion();
+      }
+
+      function formatTime(s) {
+        const m = Math.floor(s / 60);
+        const sec = s % 60;
+        return `${m}:${sec.toString().padStart(2, '0')}`;
+      }
+
+      function renderExamQuestion() {
+        const q = examQuestions[examIdx];
+        const letters = ['A', 'B', 'C', 'D'];
+        const pct = (examIdx / 10) * 100;
+        const container = document.getElementById('examContainer');
+
+        container.innerHTML = `
+          <div class="exam-header">
+            <div class="exam-title">Vocabulary Exam</div>
+            <div class="exam-meta">
+              <div class="exam-timer" id="examTimerDisplay">${formatTime(examSeconds)}</div>
+              <button class="exam-close" onclick="closeExam()">
+              <svg width="14" height="14" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+            </div>
+          </div>
+          <div class="exam-progress"><div class="exam-progress-fill" style="width:${pct}%"></div></div>
+          <div class="exam-body">
+            <div class="exam-q-number">Question ${examIdx + 1} of 10</div>
+            <div class="exam-question-word">${q.word}</div>
+            <div class="exam-prompt">Choose the correct definition:</div>
+            <div class="exam-options">
+              ${q.options.map((opt, i) => `
+                <button class="exam-option" onclick="answerExam(${i})" id="examOpt${i}">
+                  <span class="opt-letter">${letters[i]}</span>
+                  <span>${opt}</span>
+                </button>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }
+
+      function answerExam(chosenIdx) {
+        const q = examQuestions[examIdx];
+        const chosenDef = q.options[chosenIdx];
+        const isCorrect = chosenDef === q.correctDef;
+        if (isCorrect) examScore++;
+
+        examAnswers.push({
+          word: q.word,
+          correct: q.correctDef,
+          chosen: chosenDef,
+          isCorrect
+        });
+
+        // Highlight correct and wrong
+        const btns = document.querySelectorAll('.exam-option');
+        btns.forEach((btn, i) => {
+          btn.disabled = true;
+          if (q.options[i] === q.correctDef) btn.classList.add('correct');
+          else if (i === chosenIdx) btn.classList.add('wrong');
+        });
+
+        // Auto-advance after delay
+        setTimeout(() => {
+          examIdx++;
+          if (examIdx >= 10) {
+            clearInterval(examTimer);
+            showExamResults();
+          } else {
+            renderExamQuestion();
+          }
+        }, 1200);
+      }
+
+      function showExamResults() {
+        const pct = (examScore / 10) * 100;
+        let icon, grade, barClass;
+        if (pct >= 80) { icon = '🏆'; grade = 'Excellent!'; barClass = 'great'; }
+        else if (pct >= 50) { icon = '👍'; grade = 'Good effort!'; barClass = 'ok'; }
+        else { icon = '📖'; grade = 'Keep studying!'; barClass = 'poor'; }
+
+        // Save to history
+        const record = {
+          date: new Date().toISOString(),
+          score: examScore,
+          total: 10,
+          time: examSeconds,
+          source: examSource,
+          answers: examAnswers.map(a => ({
+            word: a.word,
+            correct: a.correct,
+            chosen: a.chosen,
+            isCorrect: a.isCorrect
+          }))
+        };
+        examHistory.unshift(record);
+        localStorage.setItem('lexicon_exam_history', JSON.stringify(examHistory));
+
+        const wrongAnswers = examAnswers.filter(a => !a.isCorrect);
+        let reviewHTML = '';
+        if (wrongAnswers.length > 0) {
+          reviewHTML = `
+            <div class="results-review">
+              <div class="review-title">Review incorrect answers</div>
+              ${wrongAnswers.map(a => `
+                <div class="review-item">
+                  <div class="review-word">${a.word}</div>
+                  <div class="review-answer">
+                    <span class="wrong-ans">${a.chosen}</span>
+                    <br/><span class="correct-ans">✓ ${a.correct}</span>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          `;
+        }
+
+        const container = document.getElementById('examContainer');
+        container.innerHTML = `
+          <div class="exam-header">
+            <div class="exam-title">Results</div>
+            <button class="exam-close" onclick="closeExam()">
+              <svg width="14" height="14" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+          </div>
+          <div class="exam-progress"><div class="exam-progress-fill" style="width:100%"></div></div>
+          <div class="exam-results">
+            <div class="results-icon">${icon}</div>
+            <div class="results-score">${examScore}/10</div>
+            <div class="results-label">${grade}</div>
+            <div class="results-time">Completed in ${formatTime(examSeconds)}</div>
+            <div class="results-bar-track">
+              <div class="results-bar-fill ${barClass}" id="resultsBar" style="width:0%"></div>
+            </div>
+            ${reviewHTML}
+            <div class="exam-actions">
+              <button class="exam-btn exam-btn-secondary" onclick="closeExam()" style="display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
+                <svg width="14" height="14" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                Close
+              </button>
+              <button class="exam-btn exam-btn-secondary" onclick="showExamHistory()" style="display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                View History
+              </button>
+              <button class="exam-btn exam-btn-primary" onclick="startExam()" style="display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"></polyline><polyline points="23 20 23 14 17 14"></polyline><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"></path></svg>
+                Retake Exam
+              </button>
+            </div>
+          </div>
+        `;
+
+        // Animate score bar
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            document.getElementById('resultsBar').style.width = pct + '%';
+          });
+        });
+      }
+
+      /* ═══════════════════════════════════
+         HISTORY & ANALYTICS
+         ═══════════════════════════════════ */
+      function showExamHistory() {
+        examTab = 'history';
+        const container = document.getElementById('examContainer');
+
+        const totalExams = examHistory.length;
+        const avgScore = totalExams ? (examHistory.reduce((s, h) => s + h.score, 0) / totalExams).toFixed(1) : '—';
+        const bestScore = totalExams ? Math.max(...examHistory.map(h => h.score)) : '—';
+        const avgTime = totalExams ? formatTime(Math.round(examHistory.reduce((s, h) => s + h.time, 0) / totalExams)) : '—';
+
+        // Most missed words
+        const missMap = {};
+        examHistory.forEach(h => {
+          (h.answers || []).forEach(a => {
+            if (!a.isCorrect) {
+              missMap[a.word] = (missMap[a.word] || 0) + 1;
+            }
+          });
+        });
+        const missedWords = Object.entries(missMap)
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 12);
+
+        // Streak calculation
+        let streak = 0;
+        for (const h of examHistory) {
+          if (h.score >= 8) streak++;
+          else break;
+        }
+
+        // History rows
+        let historyHTML;
+        if (totalExams === 0) {
+          historyHTML = `
+            <div class="history-empty">
+              <div class="history-empty-icon" style="color: var(--gold); display: flex; justify-content: center; margin-bottom: 24px;">
+                <svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="18" y1="20" x2="18" y2="10"></line>
+                  <line x1="12" y1="20" x2="12" y2="4"></line>
+                  <line x1="6" y1="20" x2="6" y2="14"></line>
+                </svg>
+              </div>
+              <div>No exam history yet.</div>
+              <div style="font-size:12px;margin-top:4px;">Take your first exam to see analytics!</div>
+            </div>
+          `;
+        } else {
+          historyHTML = `
+            <div class="analytics-section-title">Score Trend (last ${Math.min(examHistory.length, 20)} exams)</div>
+            <div class="chart-container">
+              <canvas id="trendChart"></canvas>
+            </div>
+            <div class="analytics-grid">
+              <div class="analytics-card">
+                <div class="analytics-card-val">${totalExams}</div>
+                <div class="analytics-card-label">Total Exams</div>
+              </div>
+              <div class="analytics-card">
+                <div class="analytics-card-val gold">${avgScore}</div>
+                <div class="analytics-card-label">Avg Score</div>
+              </div>
+              <div class="analytics-card">
+                <div class="analytics-card-val green">${bestScore}/10</div>
+                <div class="analytics-card-label">Best Score</div>
+              </div>
+              <div class="analytics-card">
+                <div class="analytics-card-val blue">${avgTime}</div>
+                <div class="analytics-card-label">Avg Time</div>
+              </div>
+            </div>
+            ${streak > 0 ? `<div style="text-align:center;margin-bottom:20px;font-size:13px;color:var(--gold)">🔥 ${streak} exam streak scoring 8+ !</div>` : ''}
+            ${missedWords.length > 0 ? `
+              <div class="analytics-section-title">Most Missed Words</div>
+              <div class="missed-words-list">
+                ${missedWords.map(([word, cnt]) => `
+                  <div class="missed-chip">${word}<span class="miss-count">×${cnt}</span></div>
+                `).join('')}
+              </div>
+            ` : ''}
+            <div class="analytics-section-title">Exam History</div>
+            <div class="history-list">
+              ${examHistory.slice(0, 30).map((h, idx) => {
+                const d = new Date(h.date);
+                const dayStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                const timeStr = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+                const cls = h.score >= 8 ? 'great' : h.score >= 5 ? 'ok' : 'poor';
+                return `
+                  <div class="history-row">
+                    <div class="history-score-ring ${cls}">${h.score}</div>
+                    <div class="history-date">
+                      <div class="history-date-day">${dayStr}</div>
+                      <div class="history-date-time">${timeStr}</div>
+                    </div>
+                    <div class="history-details">
+                      ${formatTime(h.time)} · ${h.score}/10
+                    </div>
+                    <span class="history-detail-source">${h.source || 'all'}</span>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+            <div style="text-align:center">
+              <button class="clear-history-btn" onclick="clearExamHistory()" style="display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                Clear All History
+              </button>
+            </div>
+          `;
+        }
+
+        container.innerHTML = `
+          <div class="exam-header">
+            <div class="exam-title">Vocabulary Exam</div>
+            <button class="exam-close" onclick="closeExam()">
+              <svg width="14" height="14" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+          </div>
+          <div class="exam-tabs">
+            <button class="exam-tab" onclick="showExamStart()" style="display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="18" x2="12" y2="12"></line><line x1="9" y1="15" x2="15" y2="15"></line></svg>
+              New Exam
+            </button>
+            <button class="exam-tab active" onclick="showExamHistory()" style="display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+              History & Analytics
+            </button>
+          </div>
+          <div class="analytics-body">
+            ${historyHTML}
+          </div>
+        `;
+
+        // Draw chart after DOM is ready
+        if (totalExams > 0) {
+          requestAnimationFrame(() => drawTrendChart());
+        }
+      }
+
+      function drawTrendChart() {
+        const canvas = document.getElementById('trendChart');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        const rect = canvas.parentElement.getBoundingClientRect();
+        const dpr = window.devicePixelRatio || 1;
+        canvas.width = rect.width * dpr;
+        canvas.height = rect.height * dpr;
+        ctx.scale(dpr, dpr);
+        const W = rect.width;
+        const H = rect.height;
+
+        // Take last 20 exams, reversed so oldest is left
+        const data = examHistory.slice(0, 20).reverse();
+        if (data.length < 2) {
+          ctx.fillStyle = '#5a5855';
+          ctx.font = '12px DM Sans, sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText('Need at least 2 exams for trend', W / 2, H / 2);
+          return;
+        }
+
+        const padX = 30, padTop = 12, padBottom = 24;
+        const chartW = W - padX * 2;
+        const chartH = H - padTop - padBottom;
+        const stepX = chartW / (data.length - 1);
+
+        // Grid lines
+        ctx.strokeStyle = 'rgba(201,168,76,0.08)';
+        ctx.lineWidth = 0.5;
+        for (let i = 0; i <= 10; i += 2) {
+          const y = padTop + chartH - (i / 10) * chartH;
+          ctx.beginPath();
+          ctx.moveTo(padX, y);
+          ctx.lineTo(W - padX, y);
+          ctx.stroke();
+          ctx.fillStyle = '#5a5855';
+          ctx.font = '9px DM Sans, sans-serif';
+          ctx.textAlign = 'right';
+          ctx.fillText(i, padX - 6, y + 3);
+        }
+
+        // Build points
+        const points = data.map((h, i) => ({
+          x: padX + i * stepX,
+          y: padTop + chartH - (h.score / 10) * chartH
+        }));
+
+        // Area fill gradient
+        const grad = ctx.createLinearGradient(0, padTop, 0, padTop + chartH);
+        grad.addColorStop(0, 'rgba(201,168,76,0.25)');
+        grad.addColorStop(1, 'rgba(201,168,76,0.02)');
+
+        ctx.beginPath();
+        ctx.moveTo(points[0].x, padTop + chartH);
+        points.forEach(p => ctx.lineTo(p.x, p.y));
+        ctx.lineTo(points[points.length - 1].x, padTop + chartH);
+        ctx.closePath();
+        ctx.fillStyle = grad;
+        ctx.fill();
+
+        // Line
+        ctx.beginPath();
+        ctx.strokeStyle = '#c9a84c';
+        ctx.lineWidth = 2;
+        ctx.lineJoin = 'round';
+        points.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
+        ctx.stroke();
+
+        // Dots
+        points.forEach(p => {
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, 3.5, 0, Math.PI * 2);
+          ctx.fillStyle = '#0e0f11';
+          ctx.fill();
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, 3.5, 0, Math.PI * 2);
+          ctx.strokeStyle = '#c9a84c';
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
+        });
+
+        // X-axis labels (show first, last, and some in between)
+        ctx.fillStyle = '#5a5855';
+        ctx.font = '9px DM Sans, sans-serif';
+        ctx.textAlign = 'center';
+        const labelInterval = Math.max(1, Math.floor(data.length / 5));
+        data.forEach((h, i) => {
+          if (i === 0 || i === data.length - 1 || i % labelInterval === 0) {
+            const d = new Date(h.date);
+            const lbl = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            ctx.fillText(lbl, points[i].x, H - 4);
+          }
+        });
+      }
+
+      function clearExamHistory() {
+        showConfirm('Clear all exam history? This cannot be undone.', 'Clear History', () => {
+          examHistory = [];
+          localStorage.removeItem('lexicon_exam_history');
+          showExamHistory();
+          showToast('Exam history cleared');
+        });
+      }
+
+      // Close exam on overlay click
+      document.getElementById('examOverlay').addEventListener('click', (e) => {
+        if (e.target === e.currentTarget) closeExam();
+      });
+
+      // About Modal Logic
+      function openAbout() {
+        document.getElementById('aboutOverlay').classList.add('active');
+      }
+      function closeAbout() {
+        document.getElementById('aboutOverlay').classList.remove('active');
+      }
+      document.getElementById('aboutOverlay').addEventListener('click', (e) => {
+        if (e.target === e.currentTarget) closeAbout();
+      });
+
+
+      // Time & Date Clock
+      function updateDateTime() {
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+        const dateStr = now.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+        const timeEl = document.getElementById('timeDisplay');
+        const dateEl = document.getElementById('dateDisplay');
+        if (timeEl) timeEl.textContent = timeStr;
+        if (dateEl) dateEl.textContent = dateStr;
+      }
+      setInterval(updateDateTime, 1000);
+      updateDateTime();
+
+      // Init
+      init();
+    </script>
+  </body>
+</html>

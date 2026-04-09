@@ -167,6 +167,11 @@
         max-width: 280px;
       }
 
+      /* Toggle button only visible on mobile */
+      .search-toggle {
+        display: none;
+      }
+
       .search-icon {
         position: absolute;
         left: 12px;
@@ -532,6 +537,68 @@
         display: flex;
         align-items: center;
         gap: 6px;
+      }
+
+      /* ── Pronunciation ── */
+      .phonetic-text {
+        font-family: 'DM Sans', sans-serif;
+        font-size: 16px;
+        color: rgba(44, 36, 27, 0.5);
+        font-style: italic;
+        letter-spacing: 0.02em;
+        min-height: 20px;
+      }
+
+      .speak-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        border: 1px solid rgba(44, 36, 27, 0.15);
+        background: rgba(44, 36, 27, 0.05);
+        color: rgba(44, 36, 27, 0.5);
+        cursor: pointer;
+        transition: all 0.2s;
+        flex-shrink: 0;
+      }
+
+      .speak-btn:hover {
+        background: rgba(122, 90, 45, 0.15);
+        color: #7a5a2d;
+        border-color: rgba(122, 90, 45, 0.3);
+        transform: scale(1.1);
+      }
+
+      .speak-btn.playing {
+        background: rgba(122, 90, 45, 0.2);
+        color: #7a5a2d;
+        border-color: #7a5a2d;
+        animation: speakPulse 0.8s ease infinite;
+      }
+
+      @keyframes speakPulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.15); }
+      }
+
+      .back-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .back-header .speak-btn {
+        width: 28px;
+        height: 28px;
+      }
+
+      .back-phonetic {
+        font-family: 'DM Sans', sans-serif;
+        font-size: 13px;
+        color: rgba(44, 36, 27, 0.45);
+        font-style: italic;
       }
 
       .flip-hint::before,
@@ -1629,79 +1696,340 @@
         text-transform: uppercase;
       }
 
+      /* ── Mobile: compact single-row header, scrollable controls, dynamic card ── */
       @media (max-width: 700px) {
         :root {
-          --card-h: 380px;
+          --card-h: calc(100vh - 220px); /* dynamic: fills space below header+controls */
+          --card-h: calc(100dvh - 220px); /* prefer dvh for mobile browsers */
         }
+
+        /* — Header: single compact row — */
         header {
-          flex-direction: column;
-          gap: 16px;
-          padding: 16px;
-        }
-        .header-stats {
-          width: 100%;
-          justify-content: center;
-          flex-wrap: wrap;
-          gap: 10px;
-        }
-        .controls {
-          padding: 12px 16px;
+          flex-direction: row;
+          flex-wrap: nowrap;
           gap: 8px;
-          justify-content: center;
+          padding: 8px 12px;
+          align-items: center;
         }
+
+        .logo {
+          gap: 6px;
+          flex-shrink: 0;
+        }
+
+        .logo-mark {
+          width: 28px !important;
+          height: 28px !important;
+        }
+
+        .logo-text {
+          font-size: 16px;
+        }
+
+        /* Hide subtitle "Vocabulary Trainer" on mobile */
+        .logo-text span {
+          display: none;
+        }
+
+        .header-stats {
+          flex: 1;
+          justify-content: flex-end;
+          flex-wrap: nowrap;
+          gap: 6px;
+          overflow-x: auto;
+          -webkit-overflow-scrolling: touch;
+          scrollbar-width: none;
+        }
+        .header-stats::-webkit-scrollbar { display: none; }
+
+        .stat-pill {
+          padding: 3px 8px;
+          font-size: 10px;
+          border-radius: 14px;
+          white-space: nowrap;
+          flex-shrink: 0;
+        }
+
+        /* Compact header buttons: icon-only on small screens */
+        .header-stats .btn {
+          padding: 5px 8px;
+          font-size: 0; /* hide button text */
+          gap: 0;
+          flex-shrink: 0;
+        }
+        .header-stats .btn svg {
+          width: 14px;
+          height: 14px;
+        }
+
+        /* — Controls: horizontal scroll, no wrap — */
+        .controls {
+          padding: 6px 10px;
+          gap: 6px;
+          flex-wrap: nowrap;
+          overflow-x: auto;
+          -webkit-overflow-scrolling: touch;
+          scrollbar-width: none;
+          border-bottom: 0.5px solid var(--border);
+        }
+        .controls::-webkit-scrollbar { display: none; }
+
+        /* Search: collapsed icon-only by default */
         .search-wrap {
-          flex: 0 0 100%;
-          max-width: 100%;
-          margin-bottom: 4px;
+          flex: 0 0 auto;
+          min-width: 0;
+          max-width: none;
+          width: 34px;
+          position: relative;
+          transition: width 0.25s ease;
+          overflow: hidden;
         }
+
+        /* Hide desktop search icon on mobile — toggle button has its own */
+        .search-wrap .search-icon {
+          display: none;
+        }
+
+        .search-wrap input[type="text"] {
+          opacity: 0;
+          width: 0;
+          padding: 0;
+          border: none;
+          pointer-events: none;
+          position: absolute;
+          left: 34px;
+          top: 0;
+          transition: opacity 0.2s ease, width 0.25s ease;
+        }
+
+        .search-toggle {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 34px;
+          height: 30px;
+          border-radius: 8px;
+          border: 0.5px solid var(--border);
+          background: var(--surface2);
+          color: var(--text-muted);
+          cursor: pointer;
+          transition: all 0.18s;
+          flex-shrink: 0;
+        }
+        .search-toggle:hover {
+          background: var(--surface3);
+          color: var(--text);
+          border-color: var(--border2);
+        }
+
+        /* Expanded state */
+        .search-wrap.expanded {
+          width: 200px;
+        }
+        .search-wrap.expanded input[type="text"] {
+          opacity: 1;
+          width: calc(100% - 38px);
+          padding: 6px 10px 6px 10px;
+          font-size: 12px;
+          border: 0.5px solid var(--border);
+          pointer-events: auto;
+          position: relative;
+          left: 0;
+        }
+        .search-wrap.expanded .search-toggle {
+          position: absolute;
+          right: 0;
+          top: 0;
+          border-radius: 0 8px 8px 0;
+          border-left: none;
+        }
+
         .controls .divider {
           display: none;
         }
+
         .controls .btn {
-          flex: auto;
-          justify-content: center;
+          flex-shrink: 0;
+          padding: 5px 10px;
+          font-size: 11px;
         }
+
         .sort-wrap {
-          flex: auto;
-          display: flex;
+          flex-shrink: 0;
         }
         .sort-wrap .btn {
-          width: 100%;
+          white-space: nowrap;
         }
+
+        /* — Progress bar — */
+        .progress-track {
+          height: 1.5px;
+        }
+
+        /* — Main stage: minimal spacing, dynamic card — */
         main {
-          padding: 16px 12px;
-          gap: 16px;
+          padding: 8px 10px 6px;
+          gap: 6px;
+          justify-content: flex-start;
         }
+
+        .counter {
+          font-size: 10px;
+          letter-spacing: 0.08em;
+        }
+
+        /* Card fills remaining viewport */
+        .card-scene {
+          height: var(--card-h);
+          min-height: 220px;
+          max-height: 480px;
+        }
+
         .front-content {
-          padding: 24px;
+          padding: 16px;
+          gap: 10px;
         }
-        .back-content {
-          padding: 20px 24px;
+
+        .word-index {
+          top: 12px;
+          left: 14px;
+          font-size: 9px;
         }
+
+        .word-status {
+          top: 10px;
+          right: 14px;
+          font-size: 9px;
+          padding: 2px 8px;
+        }
+
         .word-text {
-          font-size: 32px;
+          font-size: 30px;
         }
+
+        .flip-hint {
+          bottom: 12px;
+          font-size: 9px;
+          letter-spacing: 0.1em;
+        }
+
+        .phonetic-text {
+          font-size: 12px;
+          min-height: 16px;
+        }
+
+        .speak-btn {
+          width: 26px;
+          height: 26px;
+        }
+        .speak-btn svg {
+          width: 12px;
+          height: 12px;
+        }
+
+        .back-header .speak-btn {
+          width: 24px;
+          height: 24px;
+        }
+
+        .back-phonetic {
+          font-size: 11px;
+        }
+
+        .back-content {
+          padding: 14px 16px;
+          gap: 8px;
+        }
+
         .back-word {
-          font-size: 22px;
+          font-size: 18px;
         }
+
         .info-row {
           flex-direction: column;
-          gap: 4px;
+          gap: 2px;
         }
+
         .info-label {
           min-width: auto;
+          font-size: 9px;
         }
+
+        .info-val {
+          font-size: 12px;
+          line-height: 1.4;
+        }
+
+        .info-val.bengali {
+          font-size: 12px;
+        }
+
+        .pos-badge {
+          font-size: 10px;
+          padding: 2px 8px;
+        }
+
+        .syn-chip {
+          font-size: 10px;
+          padding: 2px 8px;
+        }
+
+        .example-text {
+          font-size: 11px;
+          line-height: 1.4;
+        }
+
+        .separator {
+          margin: 2px 0;
+        }
+
+        /* Card inner border tighter */
+        .card-face::before {
+          top: 5px;
+          left: 5px;
+          right: 5px;
+          bottom: 5px;
+        }
+
+        /* — Actions: compact — */
+        .card-actions {
+          gap: 8px;
+        }
+
+        .action-btn {
+          padding: 8px 16px;
+          font-size: 11px;
+          border-radius: 8px;
+        }
+
+        .nav-btn {
+          width: 36px;
+          height: 36px;
+          font-size: 15px;
+        }
+
+        /* — Hide keyboard hints on touch devices — */
+        .kb-hints {
+          display: none;
+        }
+
+        /* — Alpha grid — */
         .alpha-grid {
           width: 260px;
           grid-template-columns: repeat(4, 1fr);
         }
+
+        /* — Cloud tip: hide on mobile — */
         .cloud-tip {
-          display: none; /* Hide pointing tip on mobile to prevent overflow */
+          display: none;
         }
+
+        /* — Modals — */
         .modal-box {
           padding: 24px;
           width: 90%;
         }
+
         .exam-body { padding: 20px; }
         .exam-question-word { font-size: 28px; }
         .exam-results { padding: 24px 20px; }
@@ -1709,16 +2037,77 @@
         .analytics-grid { grid-template-columns: repeat(2, 1fr); }
         .analytics-body { padding: 16px 20px; }
         .history-date { min-width: 80px; }
+
+        /* — DateTime widget — */
         .datetime-widget {
-          bottom: 12px;
-          left: 12px;
-          padding: 8px 14px;
+          bottom: 8px;
+          left: 8px;
+          padding: 6px 10px;
+          border-radius: 8px;
         }
         .time-display {
-          font-size: 16px;
+          font-size: 14px;
         }
         .date-display {
+          font-size: 8px;
+        }
+      }
+
+      /* ── Extra-small phones (≤ 400px) ── */
+      @media (max-width: 400px) {
+        :root {
+          --card-h: calc(100vh - 200px);
+          --card-h: calc(100dvh - 200px);
+        }
+
+        header {
+          padding: 6px 8px;
+        }
+
+        .logo-mark {
+          width: 24px !important;
+          height: 24px !important;
+        }
+
+        .logo-text {
+          font-size: 14px;
+        }
+
+        .stat-pill {
+          padding: 2px 6px;
           font-size: 9px;
+        }
+
+        .controls {
+          padding: 5px 8px;
+          gap: 4px;
+        }
+
+        .search-wrap.expanded {
+          width: 160px;
+        }
+
+        .word-text {
+          font-size: 26px;
+        }
+
+        .back-word {
+          font-size: 16px;
+        }
+
+        .action-btn {
+          padding: 6px 12px;
+          font-size: 10px;
+        }
+
+        .nav-btn {
+          width: 32px;
+          height: 32px;
+          font-size: 14px;
+        }
+
+        .datetime-widget {
+          display: none; /* hide on very small screens */
         }
       }
     </style>
@@ -1780,7 +2169,10 @@
     </div>
 
     <div class="controls">
-      <div class="search-wrap">
+      <div class="search-wrap" id="searchWrap">
+        <button class="search-toggle" onclick="toggleMobileSearch()" aria-label="Search">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        </button>
         <svg class="search-icon" style="margin-top:-2px;" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
         <input
           type="text"
@@ -1849,6 +2241,12 @@
               <div class="word-index" id="wordIndex"></div>
               <div class="word-status" id="wordStatus"></div>
               <div class="word-text" id="wordText">—</div>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span class="phonetic-text" id="phoneticText"></span>
+                <button class="speak-btn" id="speakBtn" onclick="event.stopPropagation(); playPronunciation()" aria-label="Listen to pronunciation" style="display:none;">
+                  <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path></svg>
+                </button>
+              </div>
               <div class="flip-hint">tap to reveal</div>
             </div>
           </div>
@@ -2387,6 +2785,8 @@
           document.getElementById("wordIndex").textContent = "";
           document.getElementById("wordStatus").textContent = "";
           document.getElementById("wordStatus").className = "word-status";
+          document.getElementById("phoneticText").textContent = "";
+          document.getElementById("speakBtn").style.display = "none";
           setFlipped(false);
           return;
         }
@@ -2396,6 +2796,16 @@
         document.getElementById("wordText").textContent = word;
         document.getElementById("wordIndex").textContent =
           `#${WORDS.indexOf(word) + 1}`;
+
+        // Show phonetic if cached
+        const cached = cache[word];
+        if (cached && cached.phonetic) {
+          document.getElementById("phoneticText").textContent = cached.phonetic;
+        } else {
+          document.getElementById("phoneticText").textContent = "";
+        }
+        // Always show speak button (TTS fallback always available)
+        document.getElementById("speakBtn").style.display = "inline-flex";
 
         const st = progress[word];
         const statusEl = document.getElementById("wordStatus");
@@ -2424,6 +2834,89 @@
         else scene.classList.remove("flipped");
       }
 
+      /* ── Pronunciation / TTS ── */
+      let currentAudio = null;
+
+      function playPronunciation() {
+        const word = currentWord();
+        if (!word) return;
+
+        // Stop any currently playing audio
+        if (currentAudio) {
+          currentAudio.pause();
+          currentAudio = null;
+        }
+        window.speechSynthesis.cancel();
+
+        // Add playing animation to all speak buttons on the page
+        document.querySelectorAll('.speak-btn').forEach(b => b.classList.add('playing'));
+        const removePlayingClass = () => {
+          document.querySelectorAll('.speak-btn').forEach(b => b.classList.remove('playing'));
+        };
+
+        const cached = cache[word];
+        if (cached && cached.audioUrl) {
+          // Use Dictionary API audio file
+          const audio = new Audio(cached.audioUrl);
+          currentAudio = audio;
+          audio.onended = () => { currentAudio = null; removePlayingClass(); };
+          audio.onerror = () => {
+            // Fallback to TTS if audio fails
+            currentAudio = null;
+            speakWithTTS(word, removePlayingClass);
+          };
+          audio.play().catch(() => {
+            currentAudio = null;
+            speakWithTTS(word, removePlayingClass);
+          });
+        } else {
+          // Fallback: Web Speech API
+          speakWithTTS(word, removePlayingClass);
+        }
+      }
+
+      function speakWithTTS(word, onEnd) {
+        // Primary: Google Translate TTS (natural, human-like voice)
+        const gttsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&tl=en&client=tw-ob&q=${encodeURIComponent(word)}`;
+        const audio = new Audio(gttsUrl);
+        currentAudio = audio;
+        audio.onended = () => { currentAudio = null; if (onEnd) onEnd(); };
+        audio.onerror = () => {
+          currentAudio = null;
+          // Last resort fallback: browser SpeechSynthesis
+          speakWithBrowserTTS(word, onEnd);
+        };
+        audio.play().catch(() => {
+          currentAudio = null;
+          speakWithBrowserTTS(word, onEnd);
+        });
+      }
+
+      function speakWithBrowserTTS(word, onEnd) {
+        if (!window.speechSynthesis) {
+          if (onEnd) onEnd();
+          return;
+        }
+        const utterance = new SpeechSynthesisUtterance(word);
+        utterance.lang = 'en-US';
+        utterance.rate = 0.9;
+        utterance.pitch = 1;
+        const voices = speechSynthesis.getVoices();
+        const enVoice = voices.find(v => v.lang.startsWith('en') && v.name.includes('Google')) 
+                     || voices.find(v => v.lang.startsWith('en-US'))
+                     || voices.find(v => v.lang.startsWith('en'));
+        if (enVoice) utterance.voice = enVoice;
+        utterance.onend = () => { if (onEnd) onEnd(); };
+        utterance.onerror = () => { if (onEnd) onEnd(); };
+        speechSynthesis.speak(utterance);
+      }
+
+      // Pre-load voices (some browsers load them asynchronously)
+      if (window.speechSynthesis) {
+        speechSynthesis.getVoices();
+        speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices();
+      }
+
       async function flipCard() {
         if (isFlipped) {
           setFlipped(false);
@@ -2444,8 +2937,21 @@
           const dictData = dictRes.ok ? await dictRes.json() : [];
 
           let pos = "", meaning_en = "", examples = [], synonyms = [];
+          let phonetic = "", audioUrl = "";
           if (Array.isArray(dictData) && dictData.length > 0) {
             const entry = dictData[0];
+            // Extract phonetic text
+            phonetic = entry.phonetic || "";
+            // Extract audio URL from phonetics array
+            if (entry.phonetics && Array.isArray(entry.phonetics)) {
+              for (const p of entry.phonetics) {
+                if (!phonetic && p.text) phonetic = p.text;
+                if (p.audio && p.audio.length > 0) {
+                  audioUrl = p.audio;
+                  if (!phonetic && p.text) phonetic = p.text;
+                }
+              }
+            }
             if (entry.meanings && entry.meanings.length > 0) {
               const meaning = entry.meanings[0];
               pos = meaning.partOfSpeech || "";
@@ -2616,12 +3122,18 @@
             meaning_en: meaning_en || "Definition not found.",
             meaning_bn: meaning_bn || "Translation not found.",
             synonyms: finalSynonyms,
-            examples: allEx
+            examples: allEx,
+            phonetic: phonetic,
+            audioUrl: audioUrl
           };
 
           cache[word] = parsed;
           localStorage.setItem("lexicon_cache_v9", JSON.stringify(cache));
           renderBack(parsed);
+          // Update front face phonetic text too
+          if (parsed.phonetic) {
+            document.getElementById("phoneticText").textContent = parsed.phonetic;
+          }
         } catch (e) {
           document.getElementById("backContent").innerHTML =
             `<div style="color:var(--red);font-size:13px;margin-top:20px;">Error: ${e.message}</div>`;
@@ -2647,8 +3159,14 @@
         const syns = (d.synonyms || [])
           .map((s) => `<span class="syn-chip">${s}</span>`)
           .join("");
+        const phoneticHtml = d.phonetic ? `<span class="back-phonetic">${d.phonetic}</span>` : '';
+        const speakBtnHtml = `<button class="speak-btn" onclick="event.stopPropagation(); playPronunciation()" aria-label="Listen"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg></button>`;
         document.getElementById("backContent").innerHTML = `
-    <div class="back-word">${currentWord()}</div>
+    <div class="back-header">
+      <div class="back-word">${currentWord()}</div>
+      ${phoneticHtml}
+      ${speakBtnHtml}
+    </div>
     <div class="separator"></div>
     <div class="info-row">
       <div class="info-label">Type</div>
@@ -2777,6 +3295,42 @@
         buildFiltered();
         renderCard();
       }
+
+      /* Mobile expandable search */
+      function toggleMobileSearch() {
+        const wrap = document.getElementById('searchWrap');
+        const input = document.getElementById('searchInput');
+        if (wrap.classList.contains('expanded')) {
+          wrap.classList.remove('expanded');
+          input.value = '';
+          handleSearch();
+        } else {
+          wrap.classList.add('expanded');
+          setTimeout(() => input.focus(), 260);
+        }
+      }
+
+      /* Close search when clicking outside on mobile */
+      document.addEventListener('click', function(e) {
+        const wrap = document.getElementById('searchWrap');
+        if (wrap && wrap.classList.contains('expanded') && !wrap.contains(e.target)) {
+          wrap.classList.remove('expanded');
+          const input = document.getElementById('searchInput');
+          if (input.value) { input.value = ''; handleSearch(); }
+        }
+      });
+
+      /* Close search on Escape */
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+          const wrap = document.getElementById('searchWrap');
+          if (wrap && wrap.classList.contains('expanded')) {
+            wrap.classList.remove('expanded');
+            const input = document.getElementById('searchInput');
+            if (input.value) { input.value = ''; handleSearch(); }
+          }
+        }
+      });
 
       function updateStats() {
         const known = Object.values(progress).filter(

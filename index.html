@@ -2859,13 +2859,17 @@
           // Use Dictionary API audio file
           const audio = new Audio(cached.audioUrl);
           currentAudio = audio;
+          let hasFailed = false;
           audio.onended = () => { currentAudio = null; removePlayingClass(); };
           audio.onerror = () => {
-            // Fallback to TTS if audio fails
+            if (hasFailed) return;
+            hasFailed = true;
             currentAudio = null;
             speakWithTTS(word, removePlayingClass);
           };
           audio.play().catch(() => {
+            if (hasFailed) return;
+            hasFailed = true;
             currentAudio = null;
             speakWithTTS(word, removePlayingClass);
           });
@@ -2876,17 +2880,21 @@
       }
 
       function speakWithTTS(word, onEnd) {
-        // Primary: Google Translate TTS (natural, human-like voice)
+        // Primary fallback: Google Translate TTS
         const gttsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&tl=en&client=tw-ob&q=${encodeURIComponent(word)}`;
         const audio = new Audio(gttsUrl);
         currentAudio = audio;
+        let hasFailed = false;
         audio.onended = () => { currentAudio = null; if (onEnd) onEnd(); };
         audio.onerror = () => {
+          if (hasFailed) return;
+          hasFailed = true;
           currentAudio = null;
-          // Last resort fallback: browser SpeechSynthesis
           speakWithBrowserTTS(word, onEnd);
         };
         audio.play().catch(() => {
+          if (hasFailed) return;
+          hasFailed = true;
           currentAudio = null;
           speakWithBrowserTTS(word, onEnd);
         });
